@@ -1,0 +1,14 @@
+{
+  "name": "wrld-archives-discord-bot",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "discord": "node --env-file=.env discord-bot.mjs"
+  },
+  "engines": {
+    "node": ">=22"
+  },
+  "dependencies": {
+    "discord.js": "^14.28.0"
+  }
+}

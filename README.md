@@ -39,6 +39,10 @@ node scripts/validate.mjs
 node --test catalog.test.mjs
 ```
 
+## Local desktop assistant
+
+The optional WRLD AI desktop companion is in [`desktop-assistant/`](desktop-assistant/). It runs locally with Ollama and a local model; it does not use ChatGPT or an OpenAI API. Its original 8-bit avatar, file access, public-web tools, and computer actions are documented in the assistant README. The optional Discord bot provides catalog search and local-model Q&A to everyone in one configured server; it cannot control the Mac.
+
 The catalog records Juice WRLD API source IDs and categories, preserves local IDs/audio references, imports album tracklists and membership from the API, and applies unreleased project placement only for documented *The Outsiders* versions.
 
 ## Build roadmap

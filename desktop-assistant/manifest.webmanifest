@@ -1,0 +1,12 @@
+{
+  "name": "WRLD AI Local Assistant",
+  "short_name": "WRLD AI",
+  "description": "A private, local desktop assistant with an original WRLD inspired voice and avatar.",
+  "start_url": "/",
+  "display": "standalone",
+  "background_color": "#0c0911",
+  "theme_color": "#100b18",
+  "icons": [
+    { "src": "/icon.svg", "sizes": "any", "type": "image/svg+xml", "purpose": "any maskable" }
+  ]
+}

@@ -1,4 +1,5 @@
 const SUPPORTED_CATEGORIES = new Set(['released', 'unreleased', 'unsurfaced']);
+const SEARCH_INDEX = new WeakMap();
 const PROJECT_ALBUMS = new Map([
   ['too many|v1', 'The Outsiders'],
   ['off the rip|v1', 'The Outsiders'],
@@ -127,10 +128,14 @@ export function filterCatalogTracks(tracks, options = {}) {
     if (singlesOnly && !track.single) return false;
     if (remastersOnly && !track.remaster) return false;
     if (!normalizedQuery) return true;
-    const haystack = normalizeCatalogKey([
-      track.title, track.album, track.version, track.altTitles, track.producers,
-      track.engineers, track.features, track.era,
-    ].join(' '));
+    let haystack = SEARCH_INDEX.get(track);
+    if (!haystack) {
+      haystack = normalizeCatalogKey([
+        track.title, track.album, track.version, track.altTitles, track.producers,
+        track.engineers, track.features, track.era,
+      ].join(' '));
+      SEARCH_INDEX.set(track, haystack);
+    }
     return haystack.includes(normalizedQuery);
   });
 

@@ -40,6 +40,8 @@ assert.match(html, /id="shuffleDriveTrack"/, 'player must expose drive-wide shuf
 assert.match(html, /id="nowPlayingDialog"/, 'expanded player dialog must exist');
 assert.match(html, /id="lyricSyncStart"/, 'expanded player must expose lyric sync');
 assert.match(html, /id="lyricSyncMark"/, 'lyric sync must let listeners mark line starts');
+assert.match(html, /id="autoShowLyrics"/, 'expanded player must expose the automatic lyric view toggle');
+assert.match(moduleScript, /if\(autoShowLyrics&&t\.hasLyrics\)/, 'playback must auto-open lyrics for tracks with a lyric file');
 assert.match(moduleScript, /function formatLrcTimestamp\(/, 'manual lyric sync must save timed LRC lines');
 assert.match(moduleScript, /function buildSyncedLrc\(/, 'manual lyric sync must serialize every marked line');
 assert.match(moduleScript, /async function saveSyncedLyrics\(/, 'manual lyric sync must save to the local lyric store');

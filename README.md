@@ -1,6 +1,6 @@
 # WRLD Archives
 
-WRLD Archives is a static, installable music catalog for Juice WRLD. The current version keeps catalog edits and user-selected audio in the browser. Audio linked through **Match files from folder** stays on the selected drive; the browser stores file handles locally and reads each file only for playback. Per-song **Add audio** still copies that one file into browser storage. Audio is not shared between users. Public audio delivery can be enabled only for recordings the project owns or has explicit distribution rights to; do not publish copyrighted recordings without authorization.
+WRLD Archives is a static, installable music catalog for Juice WRLD. The current version keeps catalog edits and user-selected audio in the browser. Audio linked through **Link audio & covers from drive** stays on the selected drive; the browser stores file handles locally and reads each file only for playback. Matching cover images are cached in that browser so they can appear beside songs and albums. Per-song **Add audio** still copies that one file into browser storage. Audio is not shared between users. Public audio delivery can be enabled only for recordings the project owns or has explicit distribution rights to; do not publish copyrighted recordings without authorization.
 
 ## Run locally
 
@@ -23,7 +23,8 @@ The source remains deployable as a static site. The app fetches public song meta
 ## Data and audio
 
 - Song entries, favorites, and catalog metadata are stored in this browser’s `localStorage`.
-- Drive-linked files remain on the selected drive; IndexedDB stores file handles, not audio bytes. Per-song file attachments are stored in IndexedDB. Neither method shares audio across devices or visitors.
+- Drive-linked audio remains on the selected drive; IndexedDB stores file handles, not audio bytes. Matching song and album cover images are cached in that browser’s IndexedDB. Per-song audio attachments are stored in IndexedDB. These local files and covers are not uploaded to GitHub and are not shared with other devices or visitors.
+- To link a mounted external drive, use **Link audio & covers from drive** over HTTPS or localhost in a browser with folder access (such as Chrome or Edge), then select the folder. The app scans subfolders and matches filenames to catalog titles or album names. Each device and visitor must select their own folder.
 - Use **Export JSON** to back up the catalog metadata. This export does not include local audio files.
 - The app links to streaming-service searches for released songs; those links do not guarantee availability of a specific recording.
 - Do not add or publish copyrighted recordings unless you have permission to do so.

@@ -1,6 +1,6 @@
 # WRLD Archives
 
-WRLD Archives is a static, installable music catalog for Juice WRLD. The current version keeps catalog edits and user-selected audio in the browser. Audio selected in the current build stays local and is not shared. Public audio delivery can be enabled only for recordings the project owns or has explicit distribution rights to; do not publish copyrighted recordings without authorization.
+WRLD Archives is a static, installable music catalog for Juice WRLD. The current version keeps catalog edits and user-selected audio in the browser. Audio linked through **Match files from folder** stays on the selected drive; the browser stores file handles locally and reads each file only for playback. Per-song **Add audio** still copies that one file into browser storage. Audio is not shared between users. Public audio delivery can be enabled only for recordings the project owns or has explicit distribution rights to; do not publish copyrighted recordings without authorization.
 
 ## Run locally
 
@@ -23,7 +23,7 @@ The source remains deployable as a static site. The app fetches public song meta
 ## Data and audio
 
 - Song entries, favorites, and catalog metadata are stored in this browser’s `localStorage`.
-- Audio files selected by the user are stored in this browser’s IndexedDB. They are not shared across devices or visitors.
+- Drive-linked files remain on the selected drive; IndexedDB stores file handles, not audio bytes. Per-song file attachments are stored in IndexedDB. Neither method shares audio across devices or visitors.
 - Use **Export JSON** to back up the catalog metadata. This export does not include local audio files.
 - The app links to streaming-service searches for released songs; those links do not guarantee availability of a specific recording.
 - Do not add or publish copyrighted recordings unless you have permission to do so.
@@ -37,7 +37,7 @@ node scripts/validate.mjs
 node --test catalog.test.mjs
 ```
 
-The catalog normalizer records the Juice WRLD API source ID and category, preserves locally stored IDs/audio references, and applies project placement only for the documented *The Outsiders* versions.
+The catalog records Juice WRLD API source IDs and categories, preserves local IDs/audio references, imports album tracklists and membership from the API, and applies unreleased project placement only for documented *The Outsiders* versions.
 
 ## Build roadmap
 

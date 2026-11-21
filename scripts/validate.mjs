@@ -39,6 +39,11 @@ assert.match(moduleScript, /function shuffleIds\(/, 'shuffle must randomize queu
 assert.match(html, /id="shuffleDriveTrack"/, 'player must expose drive-wide shuffle');
 assert.match(html, /id="nowPlayingDialog"/, 'expanded player dialog must exist');
 assert.match(html, /data-lyrics="\$\{esc\(t\.id\)\}"/, 'song rows must support local lyric files');
+assert.match(html, /id="importLyrics"/, 'catalog tools must expose bulk lyric import');
+assert.match(html, /id="lyricsFiles" accept="\.lrc,\.txt,text\/plain" multiple/, 'bulk lyric import must accept multiple text or LRC files');
+assert.match(moduleScript, /function matchLyricsFile\(/, 'bulk lyric import must match filenames to song titles');
+assert.match(moduleScript, /async function importLyricsFiles\(/, 'bulk lyric import handler must be present');
+assert.match(moduleScript, /track\.hasLyrics\)\{existing\+\+;continue\}/, 'bulk lyric import must preserve existing lyrics');
 assert.ok(html.includes('data-cover-upload="${esc(t.id)}"'), 'song rows must support local cover files');
 assert.match(moduleScript, /\.\(mp3\|m4a\|mp4\|/, 'folder import must accept MP4 audio files');
 assert.match(moduleScript, /function makeLocalDriveTrack\(/, 'unmatched audio files must remain visible as local drive entries');

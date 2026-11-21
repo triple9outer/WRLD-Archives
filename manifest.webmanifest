@@ -1,0 +1,14 @@
+{
+  "id": "./",
+  "name": "WRLD Archives",
+  "short_name": "WRLD Archives",
+  "description": "A responsive Juice WRLD music catalog.",
+  "start_url": "./",
+  "scope": "./",
+  "display": "standalone",
+  "background_color": "#100d11",
+  "theme_color": "#100d11",
+  "icons": [
+    { "src": "wrld-icon.svg", "sizes": "any", "type": "image/svg+xml", "purpose": "any maskable" }
+  ]
+}

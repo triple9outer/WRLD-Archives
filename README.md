@@ -24,13 +24,13 @@ The source remains deployable as a static site. The app fetches public song meta
 
 - Song entries, favorites, and catalog metadata are stored in this browser’s `localStorage`.
 - Drive-linked audio remains on the selected drive; IndexedDB stores file handles, not audio bytes. Matching song and album cover images are cached in that browser’s IndexedDB. Per-song audio, cover, and lyric attachments are stored in IndexedDB. These local files, covers, and lyrics are not uploaded to GitHub and are not shared with other devices or visitors.
-- To link a mounted external drive, use **Link audio & covers from drive** over HTTPS or localhost in a browser with folder access (such as Chrome or Edge), then select the folder. The app scans subfolders and matches filenames to catalog titles or album names. Each device and visitor must select their own folder.
+- To link a mounted external drive, use **Link audio & covers from drive** over HTTPS or localhost in a browser with folder access (such as Chrome or Edge), then select the folder. The app scans subfolders, matches known filenames to catalog entries, and adds non-matching audio as local Drive file entries so those files remain visible and playable. Embedded cover art is extracted automatically. Each device and visitor must select their own folder.
 - The sidebar’s **Drive songs** view filters the catalog to entries linked from that browser’s selected drive.
 - **Shuffle Drive** builds a randomized queue of every drive-linked song and plays each once per pass.
 - Click the mini-player title to open the larger cover-led player with playback controls, seek, favorites, and synced local lyrics.
 - Add `.lrc` or `.txt` lyric files per song, or place matching `.lrc` files beside audio in a linked folder. Timed `.lrc` lines follow playback; lyric files stay in this browser. Song rows link to Genius search results, but the app does not scrape or bundle copyrighted lyrics.
 - Use **Add cover** on a song row to attach an image, or put image files named after a song or album in the linked folder. Cover images are stored in this browser and displayed on matching songs and album tabs.
-- Embedded artwork is extracted automatically from audio tags when you add an audio file or link a folder. Cover images are resized for the app and stay in this browser.
+- Embedded artwork is extracted automatically from audio tags when you add an audio file or link a folder. MP3, M4A, MP4, FLAC, WAV, AAC, OGG, Opus, AIFF, and ALAC files are scanned. HTML download pages such as `song.mp3.html` are ignored because they are not audio files. Cover images are resized for the app and stay in this browser.
 - Use **Export JSON** to back up the catalog metadata. This export does not include local audio, cover, or lyric files.
 - The app links to streaming-service searches for released songs; those links do not guarantee availability of a specific recording.
 - Do not add or publish copyrighted recordings unless you have permission to do so.

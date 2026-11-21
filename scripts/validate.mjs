@@ -38,6 +38,16 @@ assert.ok(albumDeclaration >= 0 && savedAlbumRead > albumDeclaration, 'saved alb
 assert.match(moduleScript, /function shuffleIds\(/, 'shuffle must randomize queue order without repeats during a pass');
 assert.match(html, /id="shuffleDriveTrack"/, 'player must expose drive-wide shuffle');
 assert.match(html, /id="nowPlayingDialog"/, 'expanded player dialog must exist');
+assert.match(html, /id="lyricSyncStart"/, 'expanded player must expose lyric sync');
+assert.match(html, /id="lyricSyncMark"/, 'lyric sync must let listeners mark line starts');
+assert.match(moduleScript, /function formatLrcTimestamp\(/, 'manual lyric sync must save timed LRC lines');
+assert.match(moduleScript, /function buildSyncedLrc\(/, 'manual lyric sync must serialize every marked line');
+assert.match(moduleScript, /async function saveSyncedLyrics\(/, 'manual lyric sync must save to the local lyric store');
+assert.match(html, /data-playlist-share/, 'playlist rows must expose share actions');
+assert.match(html, /id="playlistImportButton"/, 'playlist panel must expose import');
+assert.match(moduleScript, /function sharedPlaylistData\(/, 'shared playlists must serialize catalog references');
+assert.match(moduleScript, /async function importSharedPlaylistFile\(/, 'shared playlist import handler must exist');
+assert.match(moduleScript, /async function sharePlaylist\(/, 'playlist sharing must use a share sheet or downloadable file');
 assert.match(html, /data-lyrics="\$\{esc\(t\.id\)\}"/, 'song rows must support local lyric files');
 assert.match(html, /id="importLyrics"/, 'catalog tools must expose bulk lyric import');
 assert.match(html, /id="lyricsFiles" accept="\.lrc,\.txt,text\/plain" multiple/, 'bulk lyric import must accept multiple text or LRC files');

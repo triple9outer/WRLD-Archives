@@ -28,6 +28,9 @@ assert.match(html, /id="shuffleDriveTrack"/, 'player must expose drive-wide shuf
 assert.match(html, /id="nowPlayingDialog"/, 'expanded player dialog must exist');
 assert.match(html, /data-lyrics="\$\{esc\(t\.id\)\}"/, 'song rows must support local lyric files');
 assert.ok(html.includes('data-cover-upload="${esc(t.id)}"'), 'song rows must support local cover files');
+assert.match(moduleScript, /\.\(mp3\|m4a\|mp4\|/, 'folder import must accept MP4 audio files');
+assert.match(moduleScript, /function makeLocalDriveTrack\(/, 'unmatched audio files must remain visible as local drive entries');
+assert.match(moduleScript, /function extractEmbeddedCover\(/, 'audio import must extract embedded cover art');
 assert.match(html, /genius\.com\/search/, 'song rows must link to Genius search');
 const temp = mkdtempSync(join(tmpdir(), 'wrld-archives-check-'));
 try {

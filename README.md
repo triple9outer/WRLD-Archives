@@ -30,6 +30,7 @@ The source remains deployable as a static site. The app fetches public song meta
 - Click the mini-player title to open the larger cover-led player with playback controls, seek, favorites, and synced local lyrics.
 - Add `.lrc` or `.txt` lyric files per song, or place matching `.lrc` files beside audio in a linked folder. Timed `.lrc` lines follow playback; lyric files stay in this browser. Song rows link to Genius search results, but the app does not scrape or bundle copyrighted lyrics.
 - Use **Add cover** on a song row to attach an image, or put image files named after a song or album in the linked folder. Cover images are stored in this browser and displayed on matching songs and album tabs.
+- Embedded artwork is extracted automatically from audio tags when you add an audio file or link a folder. Cover images are resized for the app and stay in this browser.
 - Use **Export JSON** to back up the catalog metadata. This export does not include local audio, cover, or lyric files.
 - The app links to streaming-service searches for released songs; those links do not guarantee availability of a specific recording.
 - Do not add or publish copyrighted recordings unless you have permission to do so.

@@ -1,6 +1,6 @@
 import assert from 'node:assert/strict';
 import { spawnSync } from 'node:child_process';
-import { mkdtempSync, readFileSync, rmSync, writeFileSync } from 'node:fs';
+import { mkdtempSync, readFileSync, readdirSync, rmSync, statSync, writeFileSync } from 'node:fs';
 import { tmpdir } from 'node:os';
 import { join, resolve } from 'node:path';
 import { fileURLToPath } from 'node:url';
@@ -10,9 +10,13 @@ const html = readFileSync(join(root, 'index.html'), 'utf8');
 const catalog = readFileSync(join(root, 'catalog.mjs'), 'utf8');
 const worker = readFileSync(join(root, 'service-worker.js'), 'utf8');
 const manifest = JSON.parse(readFileSync(join(root, 'manifest.webmanifest'), 'utf8'));
+const { default: coverIndex } = await import('../cover-index.mjs');
 
 assert.match(html, /<script type="module">[\s\S]*?import \{ filterCatalogTracks, mergeApiAlbums, mergeApiCatalog \} from '\.\/catalog\.mjs';/);
 assert.match(worker, /'\.\/catalog\.mjs'/, 'service worker must cache the catalog module');
+assert.match(worker, /'\.\/cover-index\.mjs'/, 'service worker must cache the bundled cover map');
+assert.match(html, /import coverIndex from '\.\/cover-index\.mjs'/, 'app must import the bundled cover map');
+assert.match(html, /staticCoverPathForTrack\(track\)\|\|staticCoverPathForAlbum/, 'covers must have a public bundled fallback');
 assert.equal(manifest.name, 'WRLD Archives');
 assert.equal(manifest.start_url, './');
 assert.ok(manifest.icons?.length, 'manifest must declare an icon');
@@ -20,6 +24,14 @@ assert.ok(catalog.includes('export function mergeApiCatalog'));
 
 const moduleScript = html.match(/<script type="module">([\s\S]*?)<\/script>/)?.[1];
 assert.ok(moduleScript, 'main application module must exist');
+const bundledCovers = readdirSync(join(root, 'assets', 'covers')).filter(name => name.endsWith('.jpg'));
+assert.ok(bundledCovers.length > 0, 'the repository must include public cover images');
+const indexedCoverPaths = [...new Set(Object.values(coverIndex).flatMap(mapping => Object.values(mapping)))];
+assert.ok(indexedCoverPaths.length > 0, 'the cover map must include track or album mappings');
+for (const path of indexedCoverPaths) {
+  assert.match(path, /^assets\/covers\/[a-f0-9]+\.jpg$/, `unexpected bundled cover path: ${path}`);
+  assert.ok(statSync(join(root, path)).size > 0, `bundled cover image is empty: ${path}`);
+}
 const albumDeclaration = moduleScript.indexOf('let releasedAlbums=');
 const savedAlbumRead = moduleScript.indexOf("localStorage.getItem('jw-released-albums-v1')");
 assert.ok(albumDeclaration >= 0 && savedAlbumRead > albumDeclaration, 'saved album state must load after its default value is initialized');

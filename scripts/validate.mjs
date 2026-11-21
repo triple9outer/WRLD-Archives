@@ -27,6 +27,7 @@ assert.match(moduleScript, /function shuffleIds\(/, 'shuffle must randomize queu
 assert.match(html, /id="shuffleDriveTrack"/, 'player must expose drive-wide shuffle');
 assert.match(html, /id="nowPlayingDialog"/, 'expanded player dialog must exist');
 assert.match(html, /data-lyrics="\$\{esc\(t\.id\)\}"/, 'song rows must support local lyric files');
+assert.ok(html.includes('data-cover-upload="${esc(t.id)}"'), 'song rows must support local cover files');
 assert.match(html, /genius\.com\/search/, 'song rows must link to Genius search');
 const temp = mkdtempSync(join(tmpdir(), 'wrld-archives-check-'));
 try {

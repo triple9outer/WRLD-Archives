@@ -1,4 +1,4 @@
-const CACHE = 'wrld-archives-shell-v5';
+const CACHE = 'wrld-archives-shell-v6';
 const SHELL = ['./', './index.html', './catalog.mjs', './manifest.webmanifest', './wrld-icon.svg'];
 self.addEventListener('install', event => {
   event.waitUntil(caches.open(CACHE).then(cache => cache.addAll(SHELL)));

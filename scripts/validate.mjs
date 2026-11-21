@@ -11,7 +11,7 @@ const catalog = readFileSync(join(root, 'catalog.mjs'), 'utf8');
 const worker = readFileSync(join(root, 'service-worker.js'), 'utf8');
 const manifest = JSON.parse(readFileSync(join(root, 'manifest.webmanifest'), 'utf8'));
 
-assert.match(html, /<script type="module">[\s\S]*?import \{ filterCatalogTracks, mergeApiCatalog \} from '\.\/catalog\.mjs';/);
+assert.match(html, /<script type="module">[\s\S]*?import \{ filterCatalogTracks, mergeApiAlbums, mergeApiCatalog \} from '\.\/catalog\.mjs';/);
 assert.match(worker, /'\.\/catalog\.mjs'/, 'service worker must cache the catalog module');
 assert.equal(manifest.name, 'WRLD Archives');
 assert.equal(manifest.start_url, './');

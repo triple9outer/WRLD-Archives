@@ -25,6 +25,7 @@ The source remains deployable as a static site. The app fetches public song meta
 - Song entries, favorites, and catalog metadata are stored in this browser’s `localStorage`.
 - Drive-linked audio remains on the selected drive; IndexedDB stores file handles, not audio bytes. Matching song and album cover images are cached in that browser’s IndexedDB. Per-song audio attachments are stored in IndexedDB. These local files and covers are not uploaded to GitHub and are not shared with other devices or visitors.
 - To link a mounted external drive, use **Link audio & covers from drive** over HTTPS or localhost in a browser with folder access (such as Chrome or Edge), then select the folder. The app scans subfolders and matches filenames to catalog titles or album names. Each device and visitor must select their own folder.
+- The sidebar’s **Drive songs** view filters the catalog to entries linked from that browser’s selected drive.
 - Use **Export JSON** to back up the catalog metadata. This export does not include local audio files.
 - The app links to streaming-service searches for released songs; those links do not guarantee availability of a specific recording.
 - Do not add or publish copyrighted recordings unless you have permission to do so.

@@ -40,6 +40,7 @@ export function normalizeApiSong(song) {
     sourceId: song.id == null ? '' : String(song.id),
     sourceCategory: String(song.category),
     album,
+    albumMemberships: Array.isArray(song.albumMemberships) ? [...new Set(song.albumMemberships.map(String))] : (album ? [album] : []),
     era: String(era || ''),
     altTitles: Array.isArray(song.track_titles) ? song.track_titles : [],
     features: String(song.credited_artists || ''),
@@ -88,6 +89,10 @@ export function mergeApiCatalog(existingTracks, apiSongs, createId = () => crypt
         if (['title', 'version', 'status', 'leakStatus', 'source', 'sourceId', 'sourceCategory'].includes(field)) continue;
         const empty = !track[field] || (Array.isArray(track[field]) && track[field].length === 0);
         const authoritativeAlbum = field === 'album' && normalized.status === 'unreleased' && value;
+        if (field === 'albumMemberships' && value.length) {
+          track.albumMemberships = [...new Set([...(track.albumMemberships || (track.album ? [track.album] : [])), ...value])];
+          continue;
+        }
         if (value && (authoritativeAlbum ? track[field] !== value : empty)) {
           track[field] = value;
           updated++;
@@ -113,6 +118,25 @@ export function mergeApiCatalog(existingTracks, apiSongs, createId = () => crypt
   return { tracks, added, updated };
 }
 
+export function mergeApiAlbums(existingTracks, albums, createId = () => crypto.randomUUID()) {
+  const songs = [];
+  for (const album of albums || []) {
+    const albumTitle = String(album?.title || '').trim();
+    if (!albumTitle || !Array.isArray(album.songs)) continue;
+    for (const entry of album.songs) {
+      const song = entry?.song;
+      if (!song?.name) continue;
+      songs.push({
+        ...song,
+        album: albumTitle,
+        albumMemberships: [albumTitle],
+        release_date: album.release_date || '',
+      });
+    }
+  }
+  return mergeApiCatalog(existingTracks, songs, createId);
+}
+
 export function filterCatalogTracks(tracks, options = {}) {
   const {
     query = '', status = 'all', leakStatus = 'all', favoriteOnly = false,
@@ -123,7 +147,8 @@ export function filterCatalogTracks(tracks, options = {}) {
     const group = track.album || (track.status === 'unreleased' ? 'Unreleased' : 'Other released');
     if (status !== 'all' && track.status !== status) return false;
     if (leakStatus !== 'all' && !(track.status === 'unreleased' && (track.leakStatus || 'leaked') === leakStatus)) return false;
-    if (album && group !== album) return false;
+    const memberships = track.albumMemberships || (track.album ? [track.album] : []);
+    if (album && group !== album && !memberships.some(name => normalizeCatalogKey(name) === normalizeCatalogKey(album))) return false;
     if (favoriteOnly && !track.favorite) return false;
     if (singlesOnly && !track.single) return false;
     if (remastersOnly && !track.remaster) return false;
@@ -131,7 +156,7 @@ export function filterCatalogTracks(tracks, options = {}) {
     let haystack = SEARCH_INDEX.get(track);
     if (!haystack) {
       haystack = normalizeCatalogKey([
-        track.title, track.album, track.version, track.altTitles, track.producers,
+        track.title, track.album, track.albumMemberships, track.version, track.altTitles, track.producers,
         track.engineers, track.features, track.era,
       ].join(' '));
       SEARCH_INDEX.set(track, haystack);

@@ -1,6 +1,6 @@
 # WRLD Archives
 
-WRLD Archives is a static, installable music catalog for Juice WRLD. The current version keeps catalog edits and user-selected audio in the browser. It does not upload audio files or include copyrighted recordings in the repository.
+WRLD Archives is a static, installable music catalog for Juice WRLD. The current version keeps catalog edits and user-selected audio in the browser. Audio selected in the current build stays local and is not shared. Public audio delivery can be enabled only for recordings the project owns or has explicit distribution rights to; do not publish copyrighted recordings without authorization.
 
 ## Run locally
 

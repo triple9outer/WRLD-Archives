@@ -20,6 +20,14 @@ assert.ok(catalog.includes('export function mergeApiCatalog'));
 
 const moduleScript = html.match(/<script type="module">([\s\S]*?)<\/script>/)?.[1];
 assert.ok(moduleScript, 'main application module must exist');
+const albumDeclaration = moduleScript.indexOf('let releasedAlbums=');
+const savedAlbumRead = moduleScript.indexOf("localStorage.getItem('jw-released-albums-v1')");
+assert.ok(albumDeclaration >= 0 && savedAlbumRead > albumDeclaration, 'saved album state must load after its default value is initialized');
+assert.match(moduleScript, /function shuffleIds\(/, 'shuffle must randomize queue order without repeats during a pass');
+assert.match(html, /id="shuffleDriveTrack"/, 'player must expose drive-wide shuffle');
+assert.match(html, /id="nowPlayingDialog"/, 'expanded player dialog must exist');
+assert.match(html, /data-lyrics="\$\{esc\(t\.id\)\}"/, 'song rows must support local lyric files');
+assert.match(html, /genius\.com\/search/, 'song rows must link to Genius search');
 const temp = mkdtempSync(join(tmpdir(), 'wrld-archives-check-'));
 try {
   const sourcePath = join(temp, 'inline-app.mjs');

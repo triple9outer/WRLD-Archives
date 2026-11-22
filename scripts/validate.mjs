@@ -19,7 +19,7 @@ assert.match(html, /<script type="module">[\s\S]*?import \{ filterCatalogTracks,
 assert.match(worker, /'\.\/catalog\.mjs'/, 'service worker must cache the catalog module');
 assert.match(worker, /'\.\/cover-index\.mjs'/, 'service worker must cache the bundled cover map');
 assert.match(worker, /'\.\/library-tools\.mjs'/, 'service worker must cache the local library tools module');
-assert.match(worker, /wrld-archives-shell-v25/, 'service worker cache must refresh for library tools and player updates');
+assert.match(worker, /wrld-archives-shell-v26/, 'service worker cache must refresh for library tools and player updates');
 assert.ok(worker.includes('/api\\/(lyrics|cloud-audio|music-video)'), 'service worker must never cache API responses');
 assert.match(html, /import coverIndex from '\.\/cover-index\.mjs'/, 'app must import the bundled cover map');
 assert.match(html, /staticCoverPathForTrack\(track\)\|\|staticCoverPathForAlbum/, 'covers must have a public bundled fallback');
@@ -49,6 +49,17 @@ assert.match(moduleScript, /tracks\.filter\(canPlayTrack\)\.map\(t=>t\.id\)/, 'w
 assert.match(moduleScript, /function canPlayTrack\(/, 'playability must include local and public cloud audio');
 assert.match(html, /id="grailsTab"/, 'catalog must expose the local Grails list');
 assert.match(html, /id="cloudStorageDialog"/, 'catalog must expose public audio storage management');
+assert.match(html, /id="cloudAdminTokenInput" type="password"/, 'cloud audio publishing must use a visible password field');
+assert.match(html, /id="cloudRightsConfirmed" type="checkbox"/, 'cloud audio publishing must require explicit rights confirmation');
+assert.match(moduleScript, /async function publishLinkedAudio\(/, 'cloud audio publishing handler must exist');
+assert.doesNotMatch(moduleScript, /function publishLinkedAudio\(\)[\s\S]{0,500}prompt\(/, 'cloud publishing must not depend on a browser prompt');
+assert.doesNotMatch(moduleScript, /function publishLinkedAudio\(\)[\s\S]{0,700}confirm\(/, 'cloud publishing must not depend on a browser confirmation dialog');
+assert.match(html, /id="cloudUploadDetails"/, 'cloud publishing must show per-file error details');
+assert.match(html, /id="lyricsLibraryDialog"/, 'catalog must expose library-wide lyric coverage');
+assert.match(html, /id="sideLyricsLibrary"/, 'sidebar must open lyric coverage');
+assert.match(moduleScript, /async function scanLyricsCoverage\(/, 'lyric coverage must scan locally stored files');
+assert.match(moduleScript, /data-lyrics-library-file/, 'lyric coverage must support per-song lyric imports');
+assert.match(moduleScript, /data-lyrics-library-play/, 'lyric coverage must let users play songs with captions');
 assert.match(cloudAudioApi, /rightsCleared !== 'true'/, 'public cloud audio must be hidden unless the upload is rights-cleared');
 assert.match(cloudAudioApi, /WRLD_CLOUD_ADMIN_TOKEN/, 'public audio uploads must require the configured admin secret');
 assert.match(musicVideoApi, /status.*released/, 'music-video lookup must be limited to released tracks');

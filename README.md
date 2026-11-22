@@ -22,7 +22,7 @@ The GitHub Pages build remains a static site. The app fetches public song metada
 
 ## Cloud audio archive
 
-The **Cloud audio** sidebar page can list and stream audio for every visitor and provides an admin-only upload flow for authorized recordings. It streams through the Pages Function and a private R2 bucket; the bucket itself should not be made public. Uploads require the admin secret and an explicit rights confirmation. Do not upload leaked or other copyrighted recordings unless you have the rights to distribute those specific files. GitHub Pages cannot run this endpoint; this feature requires a Cloudflare Pages deployment.
+The **Cloud audio** sidebar page can list and stream audio for every visitor and provides an admin-only upload flow for authorized recordings. It streams through the Pages Function and a private R2 bucket; the bucket itself should not be made public. Uploads require the admin secret and an explicit rights confirmation, but the app cannot independently verify licenses. Do not upload leaked or other copyrighted recordings unless you have the rights to distribute those specific files. GitHub Pages cannot run this endpoint; this feature requires a Cloudflare Pages deployment.
 
 To configure it in Cloudflare:
 

@@ -17,7 +17,7 @@ assert.match(html, /<script type="module">[\s\S]*?import \{ filterCatalogTracks,
 assert.match(worker, /'\.\/catalog\.mjs'/, 'service worker must cache the catalog module');
 assert.match(worker, /'\.\/cover-index\.mjs'/, 'service worker must cache the bundled cover map');
 assert.match(worker, /'\.\/library-tools\.mjs'/, 'service worker must cache the local library tools module');
-assert.match(worker, /wrld-archives-shell-v23/, 'service worker cache must refresh for library tools and player updates');
+assert.match(worker, /wrld-archives-shell-v24/, 'service worker cache must refresh for library tools and player updates');
 assert.match(worker, /url\.pathname\.endsWith\('\/api\/lyrics'\)/, 'service worker must never cache licensed lyric responses');
 assert.match(html, /import coverIndex from '\.\/cover-index\.mjs'/, 'app must import the bundled cover map');
 assert.match(html, /staticCoverPathForTrack\(track\)\|\|staticCoverPathForAlbum/, 'covers must have a public bundled fallback');
@@ -83,6 +83,12 @@ assert.match(moduleScript, /requestAnimationFrame\(focusSurprisePick\)/, 'random
 assert.match(moduleScript, /function setPlayerVolume\(/, 'volume bars must control the shared player volume');
 assert.match(moduleScript, /wrld-player-volume/, 'player volume preference must persist locally');
 assert.match(moduleScript, /audioGainNode=audioContext\.createGain\(\)/, 'mobile volume control must use Web Audio gain where native volume is unavailable');
+assert.match(html, /quickSearch \.moreFilters\[open\]\{grid-column:1\/-1\}/, 'expanded filter tools must push album tabs down instead of overlapping them');
+assert.match(html, /button\.project:not\(\.secondary\)\{background:linear-gradient/, 'album cards must retain readable dark backgrounds with a gold accent');
+assert.match(html, /id="availabilityFilter"/, 'catalog must filter tracks by local audio availability');
+assert.match(html, /id="resetFilters"/, 'catalog must let users clear all active filters');
+assert.match(html, /value="recent">Recently played/, 'track sorting must include recent listening history');
+assert.match(moduleScript, /function addToQueueNext\(/, 'song rows must support play-next queue ordering');
 assert.match(moduleScript, /function syncDesktopLyrics\(/, 'ambient captions must follow timed lyric playback');
 assert.match(html, /id="findTimedLyrics"/, 'player must expose the licensed synced-lyrics lookup');
 assert.match(moduleScript, /async function fetchProviderLyrics\(/, 'player must fetch timed lyrics from its same-origin backend');

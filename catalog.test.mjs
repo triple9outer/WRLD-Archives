@@ -53,6 +53,18 @@ test('filters and sorts tracks consistently', () => {
   assert.deepEqual(filterCatalogTracks(tracks, { singlesOnly: true }).map(t => t.title), ['Too Many']);
 });
 
+test('sorts recently played songs by the private playback history', () => {
+  const tracks = [
+    { id: 'older', title: 'Alpha', status: 'released' },
+    { id: 'newer', title: 'Zulu', status: 'released' },
+    { id: 'never', title: 'Middle', status: 'released' },
+  ];
+  assert.deepEqual(
+    filterCatalogTracks(tracks, { sortMode: 'recent', recentIds: ['newer', 'older'] }).map(track => track.id),
+    ['newer', 'older', 'never'],
+  );
+});
+
 test('imports every album placement while retaining one catalog entry for shared songs', () => {
   const albums = [
     { title: 'Legends Never Die', release_date: '2020-07-10', songs: [{ song: { id: 7, name: 'Righteous', category: 'released' } }] },

@@ -140,7 +140,7 @@ export function mergeApiAlbums(existingTracks, albums, createId = () => crypto.r
 export function filterCatalogTracks(tracks, options = {}) {
   const {
     query = '', status = 'all', leakStatus = 'all', favoriteOnly = false,
-    album = '', singlesOnly = false, remastersOnly = false, sortMode = 'az',
+    album = '', singlesOnly = false, remastersOnly = false, sortMode = 'az', recentIds = [],
   } = options;
   const normalizedQuery = normalizeCatalogKey(query);
   const matches = tracks.filter(track => {
@@ -165,10 +165,15 @@ export function filterCatalogTracks(tracks, options = {}) {
   });
 
   const compareTitle = (a, b) => a.title.localeCompare(b.title, undefined, { sensitivity: 'base', numeric: true });
+  const recentOrder = new Map((Array.isArray(recentIds) ? recentIds : []).map((id, index) => [String(id), index]));
   matches.sort((a, b) => {
     if (sortMode === 'za') return compareTitle(b, a);
     if (sortMode === 'year') return String(a.year || '9999').localeCompare(String(b.year || '9999'));
     if (sortMode === 'favorites') return Number(!!b.favorite) - Number(!!a.favorite) || compareTitle(a, b);
+    if (sortMode === 'recent') {
+      return (recentOrder.get(String(a.id)) ?? Number.MAX_SAFE_INTEGER)
+        - (recentOrder.get(String(b.id)) ?? Number.MAX_SAFE_INTEGER) || compareTitle(a, b);
+    }
     return compareTitle(a, b);
   });
   return matches;

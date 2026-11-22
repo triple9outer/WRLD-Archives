@@ -47,6 +47,8 @@ The API uses Musixmatch's `matcher.subtitle.get` endpoint, which returns synced 
 - Song rows reflow for tablet and phone screens, giving long titles room to wrap and placing playback actions beneath the title when the layout narrows.
 - The main player and Ambient desktop share a volume slider and remember its level in this browser. On mobile browsers that limit native volume control, local or same-origin audio can use Web Audio gain.
 - **Surprise me** picks a random song from the current search, album, status, and favorite filters, highlights it in the archive, and offers playback when a local file or authorized link is available.
+- **Filters & tools** expand in the page layout so they never cover album cards. Use the audio availability filter to find tracks with audio or entries that still need a file, and **Reset filters** to return to the full catalog.
+- Sort by **Recently played** using this browser’s private history, or add any song to **Play next** without replacing the current track.
 - **Library Checkup** scans files linked on this device for missing or unreadable audio, likely unsupported browser formats, possible same-name/same-size duplicates, missing covers or lyrics, and local drive entries. Duplicate matches are only suggestions; the scan never removes files.
 - **WRLD Replay** keeps private play counts and listening time in this browser’s local storage and summarizes the most played songs and projects. These stats are not synced or shared.
 - Browser Media Session controls expose current song metadata, artwork, play/pause, skip, and seeking to lock-screen, keyboard, headset, and operating-system media controls where the browser and device support them.

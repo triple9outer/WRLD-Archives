@@ -419,24 +419,26 @@ Karate||LQ`;
     if(!tracksToPublish.length){status.textContent='No linked audio is available in this browser yet. The folder must be linked on this same device and browser.';return}
     if(!token){status.textContent='Enter the Cloud admin token in the field above, then try again.';document.querySelector('#cloudAdminTokenInput').focus();return}
     if(!rightsConfirmed){status.textContent='Check the rights confirmation before publishing recordings publicly.';document.querySelector('#cloudRightsConfirmed').focus();return}
-    let uploaded=0,unreadable=0,missing=0,tooLarge=0,failed=0,stopped=false;const problems=[];const noteProblem=(track,message)=>{failed++;if(problems.length<12)problems.push(`${displayTitle(track)}: ${message}`)};
-    button.disabled=true;status.textContent=`Preparing ${tracksToPublish.length} linked files…`;
+    let uploaded=0,unreadable=0,missing=0,tooLarge=0,failed=0,stoppedMessage='',nextIndex=0,completed=0;const concurrency=Math.min(3,tracksToPublish.length),problems=[];const noteProblem=(track,message)=>{failed++;if(problems.length<12)problems.push(`${displayTitle(track)}: ${message}`)};
+    button.disabled=true;status.textContent=`Preparing ${tracksToPublish.length} linked files; uploading up to ${concurrency} at a time…`;
+    async function publishOne(track){
+      try{
+        let file;try{file=await readAudio(track.id,true)}catch(error){unreadable++;if(problems.length<12)problems.push(`${displayTitle(track)}: ${error.message||'could not read the linked file'}`);return}
+        if(!file||!file.size){missing++;if(problems.length<12)problems.push(`${displayTitle(track)}: no readable file was found`);return}
+        if(file.size>95*1024*1024){tooLarge++;if(problems.length<12)problems.push(`${displayTitle(track)}: file exceeds the 95 MB upload limit`);return}
+        const form=new FormData();form.append('file',file,file.name||`${track.title}.audio`);form.append('catalogId',cloudTrackId(track));form.append('sourceId',String(track.sourceId||''));form.append('title',track.title||'');form.append('version',track.version||'');form.append('album',track.album||'');form.append('artist',displayArtists(track));form.append('rightsConfirmed','yes');
+        const response=await fetch(cloudEndpoint(),{method:'POST',headers:{Authorization:`Bearer ${token}`,'X-WRLD-Archives':'1'},body:form}),data=await response.json().catch(()=>({}));
+        if(!response.ok){if([401,403,404,503].includes(response.status)){stoppedMessage=`Publishing stopped: ${data.error||`Cloud upload failed (${response.status}).`} Check the admin token and Cloudflare setup.`;return}noteProblem(track,data.error||`server returned ${response.status}`);return}
+        uploaded++
+      }catch(error){noteProblem(track,error.message||'network upload failed')}
+      finally{completed++;if(!stoppedMessage)status.textContent=`Processed ${completed} of ${tracksToPublish.length} files (${uploaded} published)…`}
+    }
+    async function uploadWorker(){while(!stoppedMessage){const index=nextIndex++;if(index>=tracksToPublish.length)return;const track=tracksToPublish[index];status.textContent=`Publishing ${index+1} of ${tracksToPublish.length}: ${displayTitle(track)} (${concurrency} at a time)…`;await publishOne(track)}}
     try{
-      for(let index=0;index<tracksToPublish.length;index++){
-        const track=tracksToPublish[index];status.textContent=`Publishing ${index+1} of ${tracksToPublish.length}: ${displayTitle(track)}…`;
-        let file;
-        try{file=await readAudio(track.id,true)}catch(error){unreadable++;if(problems.length<12)problems.push(`${displayTitle(track)}: ${error.message||'could not read the linked file'}`);continue}
-        if(!file||!file.size){missing++;if(problems.length<12)problems.push(`${displayTitle(track)}: no readable file was found`);continue}
-        if(file.size>95*1024*1024){tooLarge++;if(problems.length<12)problems.push(`${displayTitle(track)}: file exceeds the 95 MB upload limit`);continue}
-        try{
-          const form=new FormData();form.append('file',file,file.name||`${track.title}.audio`);form.append('catalogId',cloudTrackId(track));form.append('sourceId',String(track.sourceId||''));form.append('title',track.title||'');form.append('version',track.version||'');form.append('album',track.album||'');form.append('artist',displayArtists(track));form.append('rightsConfirmed','yes');
-          const response=await fetch(cloudEndpoint(),{method:'POST',headers:{Authorization:`Bearer ${token}`,'X-WRLD-Archives':'1'},body:form});const data=await response.json().catch(()=>({}));
-          if(!response.ok){if([401,403,404,503].includes(response.status)){status.textContent=`Publishing stopped: ${data.error||`Cloud upload failed (${response.status}).`} Check the admin token and Cloudflare setup. No more files were sent.`;stopped=true;break}noteProblem(track,data.error||`server returned ${response.status}`);continue}
-          uploaded++
-        }catch(error){noteProblem(track,error.message||'network upload failed')}
-      }
+      await Promise.all(Array.from({length:concurrency},()=>uploadWorker()));
       if(problems.length)details.innerHTML=problems.map(problem=>`<div class="featureIssueRow"><span class="featureIssueCopy"><small>${esc(problem)}</small></span></div>`).join('')+(failed+unreadable+missing+tooLarge>problems.length?`<div class="featureEmpty">Showing ${problems.length} of ${failed+unreadable+missing+tooLarge} skipped items.</div>`:'');
-      if(!stopped){const skipped=unreadable+missing+tooLarge+failed;status.textContent=`Upload finished: ${uploaded} published, ${skipped} skipped (${unreadable} unreadable, ${missing} missing, ${tooLarge} over 95 MB, ${failed} upload or server errors).`;if(uploaded)await loadCloudAudioCatalog()}
+      if(stoppedMessage){status.textContent=`${stoppedMessage} ${uploaded} files finished before the stop; no new uploads were started afterward.`;if(uploaded)await loadCloudAudioCatalog()}
+      else{const skipped=unreadable+missing+tooLarge+failed;status.textContent=`Upload finished: ${uploaded} published, ${skipped} skipped (${unreadable} unreadable, ${missing} missing, ${tooLarge} over 95 MB, ${failed} upload or server errors).`;if(uploaded)await loadCloudAudioCatalog()}
     }finally{button.disabled=false}
   }
   function persistPlayback(){localStorage.setItem('jw-play-queue-v1',JSON.stringify(queueIds));localStorage.setItem('jw-playlists-v1',JSON.stringify(playlists));localStorage.setItem('jw-listening-history-v1',JSON.stringify(historyIds))}

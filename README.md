@@ -32,7 +32,7 @@ To configure it in Cloudflare:
 4. In **Settings → Variables and Secrets**, add an encrypted secret named `WRLD_CLOUD_ADMIN_TOKEN` with a long random value (at least 24 characters). Enter that same value in the Cloud audio publish form; it stays in the open page only and is not saved in browser storage. The form shows per-file reasons when a linked file cannot be read or uploaded. Never commit the token to GitHub or put it in frontend code.
 5. Redeploy the Pages project. Open its **Cloud audio** page to check that the endpoint responds, then upload only individual files cleared for public distribution.
 
-Cloudflare documents R2 setup and current pricing at [R2 Get started](https://developers.cloudflare.com/r2/get-started/) and [R2 pricing](https://developers.cloudflare.com/r2/pricing/). The free tier and rates can change; check the dashboard before storing large libraries. The app limits each file to 95 MB and supports HTTP range requests for streaming. The current Pages Function is `functions/api/cloud-audio.js`.
+Cloudflare documents R2 setup and current pricing at [R2 Get started](https://developers.cloudflare.com/r2/get-started/) and [R2 pricing](https://developers.cloudflare.com/r2/pricing/). The free tier and rates can change; check the dashboard before storing large libraries. The app limits each file to 95 MB, uploads up to three selected files concurrently, and supports HTTP range requests for streaming. Upload time still depends on your connection and file sizes. The current Pages Function is `functions/api/cloud-audio.js`.
 
 ## Ambient music-video backgrounds
 

@@ -52,6 +52,9 @@ assert.match(html, /id="cloudStorageDialog"/, 'catalog must expose public audio 
 assert.match(html, /id="cloudAdminTokenInput" type="password"/, 'cloud audio publishing must use a visible password field');
 assert.match(html, /id="cloudRightsConfirmed" type="checkbox"/, 'cloud audio publishing must require explicit rights confirmation');
 assert.match(moduleScript, /async function publishLinkedAudio\(/, 'cloud audio publishing handler must exist');
+assert.match(moduleScript, /const concurrency=Math\.min\(3,tracksToPublish\.length\)/, 'cloud audio publishing must use bounded parallel uploads');
+assert.match(moduleScript, /Promise\.all\(Array\.from\(\{length:concurrency\}/, 'cloud audio upload workers must run concurrently');
+assert.match(moduleScript, /Processed \${completed} of \${tracksToPublish\.length}/, 'cloud audio publishing must report progress as files finish');
 assert.doesNotMatch(moduleScript, /function publishLinkedAudio\(\)[\s\S]{0,500}prompt\(/, 'cloud publishing must not depend on a browser prompt');
 assert.doesNotMatch(moduleScript, /function publishLinkedAudio\(\)[\s\S]{0,700}confirm\(/, 'cloud publishing must not depend on a browser confirmation dialog');
 assert.match(html, /id="cloudUploadDetails"/, 'cloud publishing must show per-file error details');

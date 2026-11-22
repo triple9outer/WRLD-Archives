@@ -47,6 +47,8 @@ assert.match(html, /id="shuffleLibraryTrack"/, 'player must expose whole-library
 assert.match(moduleScript, /function shuffleLibrarySongs\(/, 'whole-library shuffle must build a randomized queue');
 assert.match(moduleScript, /tracks\.filter\(canPlayTrack\)\.map\(t=>t\.id\)/, 'whole-library shuffle must include every track with playable audio');
 assert.match(moduleScript, /function canPlayTrack\(/, 'playability must include local and public cloud audio');
+assert.match(moduleScript, /async function playTrack\(t\)\{if\(!t\)return;try\{const cloudUrl=cloudAudioUrl\(t\);if\(cloudUrl\)\{play\(t,cloudUrl\);return\}const file=await readAudio\(t\.id\)/, 'matching cloud audio must take priority over a local drive copy');
+assert.match(moduleScript, /Cloud copy takes priority/, 'catalog must indicate when a cloud file overrides linked drive playback');
 assert.match(html, /id="grailsTab"/, 'catalog must expose the local Grails list');
 assert.match(html, /id="cloudStorageDialog"/, 'catalog must expose public audio storage management');
 assert.match(html, /id="cloudAdminTokenInput" type="password"/, 'cloud audio publishing must use a visible password field');

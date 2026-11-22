@@ -56,7 +56,7 @@ The API uses Musixmatch's `matcher.subtitle.get` endpoint, which returns synced 
 ## Data and audio
 
 - Song entries, favorites, and catalog metadata are stored in this browser’s `localStorage`.
-- Drive-linked audio remains on the selected drive; IndexedDB stores file handles, not audio bytes. Per-song audio, cover overrides, and lyric attachments are stored in IndexedDB. These personal files and lyrics are not uploaded to GitHub or shared with other devices or visitors.
+- Drive-linked audio remains on the selected drive; IndexedDB stores file handles, not audio bytes. When a public Cloud audio file matches a track by catalog source ID or normalized title and version, playback uses the Cloud copy in place of that track’s drive copy. The local file is left untouched and is used if no Cloud match is available. Per-song audio, cover overrides, and lyric attachments are stored in IndexedDB. These personal files and lyrics are not uploaded to GitHub or shared with other devices or visitors.
 - To link a mounted external drive, use **Link audio & covers from drive** over HTTPS or localhost in a browser with folder access (such as Chrome or Edge), then select the folder. The app scans subfolders, matches known filenames to catalog entries, and adds non-matching audio as local Drive file entries so those files remain visible and playable. Embedded cover art is extracted automatically. Each device and visitor must select their own folder.
 - The sidebar’s **Drive songs** view filters the catalog to entries linked from that browser’s selected drive.
 - **Shuffle Drive** builds a randomized queue of every drive-linked song and plays each once per pass.

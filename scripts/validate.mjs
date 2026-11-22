@@ -19,7 +19,7 @@ assert.match(html, /<script type="module">[\s\S]*?import \{ filterCatalogTracks,
 assert.match(worker, /'\.\/catalog\.mjs'/, 'service worker must cache the catalog module');
 assert.match(worker, /'\.\/cover-index\.mjs'/, 'service worker must cache the bundled cover map');
 assert.match(worker, /'\.\/library-tools\.mjs'/, 'service worker must cache the local library tools module');
-assert.match(worker, /wrld-archives-shell-v26/, 'service worker cache must refresh for library tools and player updates');
+assert.match(worker, /wrld-archives-shell-v27/, 'service worker cache must refresh for library tools and player updates');
 assert.ok(worker.includes('/api\\/(lyrics|cloud-audio|music-video)'), 'service worker must never cache API responses');
 assert.match(html, /import coverIndex from '\.\/cover-index\.mjs'/, 'app must import the bundled cover map');
 assert.match(html, /staticCoverPathForTrack\(track\)\|\|staticCoverPathForAlbum/, 'covers must have a public bundled fallback');
@@ -51,6 +51,9 @@ assert.match(moduleScript, /async function playTrack\(t\)\{if\(!t\)return;try\{c
 assert.match(moduleScript, /Cloud copy takes priority/, 'catalog must indicate when a cloud file overrides linked drive playback');
 assert.match(html, /id="grailsTab"/, 'catalog must expose the local Grails list');
 assert.match(html, /id="cloudStorageDialog"/, 'catalog must expose public audio storage management');
+assert.equal((html.match(/id="cloudUploadDrive"/g) || []).length, 1, 'cloud publishing must have one uniquely bound button');
+assert.match(moduleScript, /async function loadCloudAudioCatalog\(forceFresh=false\)/, 'cloud list must support a fresh read on open or refresh');
+assert.match(moduleScript, /if\(forceFresh\)endpoint\.searchParams\.set\('_'/, 'manual cloud refresh must bypass stale list caches');
 assert.match(html, /id="cloudAdminTokenInput" type="password"/, 'cloud audio publishing must use a visible password field');
 assert.match(html, /id="cloudRightsConfirmed" type="checkbox"/, 'cloud audio publishing must require explicit rights confirmation');
 assert.match(moduleScript, /async function publishLinkedAudio\(/, 'cloud audio publishing handler must exist');

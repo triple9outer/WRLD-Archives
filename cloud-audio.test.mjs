@@ -81,6 +81,7 @@ test('only rights-confirmed uploads appear in the public list and support byte r
   });
   const listed = await onRequest(ctx(new Request('https://wrld.test/api/cloud-audio?list=1'), bucket));
   assert.deepEqual((await listed.json()).items.map(item => item.catalogId), ['song-1']);
+  assert.equal(listed.headers.get('cache-control'), 'public, max-age=30');
 
   const ranged = await onRequest(ctx(new Request('https://wrld.test/api/cloud-audio?id=song-1', { headers: { Range: 'bytes=2-5' } }), bucket));
   assert.equal(ranged.status, 206);

@@ -106,7 +106,7 @@ async function handleGet(request, env, url, headOnly = false) {
   const catalogId = safeId(url.searchParams.get('id'));
   if (url.searchParams.get('list') === '1') {
     const items = await listPublicAudio(env.AUDIO_BUCKET);
-    return json({ items }, 200, { 'cache-control': 'public, max-age=300' });
+    return json({ items }, 200, { 'cache-control': 'public, max-age=30' });
   }
   if (!catalogId) return json({ error: 'A catalog track id or list=1 is required.' }, 400);
   const key = `${AUDIO_KEY_PREFIX}${catalogId}`;

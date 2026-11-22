@@ -19,7 +19,7 @@ assert.match(html, /<script type="module">[\s\S]*?import \{ filterCatalogTracks,
 assert.match(worker, /'\.\/catalog\.mjs'/, 'service worker must cache the catalog module');
 assert.match(worker, /'\.\/cover-index\.mjs'/, 'service worker must cache the bundled cover map');
 assert.match(worker, /'\.\/library-tools\.mjs'/, 'service worker must cache the local library tools module');
-assert.match(worker, /wrld-archives-shell-v29/, 'service worker cache must refresh for library tools and player updates');
+assert.match(worker, /wrld-archives-shell-v30/, 'service worker cache must refresh for library tools and player updates');
 assert.ok(worker.includes('/api\\/(lyrics|cloud-audio|music-video)'), 'service worker must never cache API responses');
 assert.match(html, /import coverIndex from '\.\/cover-index\.mjs'/, 'app must import the bundled cover map');
 assert.match(html, /staticCoverPathForTrack\(track\)\|\|staticCoverPathForAlbum/, 'covers must have a public bundled fallback');
@@ -119,6 +119,7 @@ assert.match(moduleScript, /performance\.now\(\)-autoMixQuietSince>=320/, 'autom
 assert.match(moduleScript, /remaining>5\*rate/, 'automatic transitions must have a safe end-of-track fallback');
 assert.match(moduleScript, /localStorage\.setItem\('wrld-crossfade-mode'/, 'transition mode must persist');
 assert.match(moduleScript, /function maybeStartCrossfade\(/, 'player must preload and start the next queued track before the current one ends');
+assert.doesNotMatch(moduleScript, /function play\(t,fileUrl[\s\S]{0,500}ensureAudioAnalyser\(/, 'ordinary playback must not be rerouted through a suspended visualizer context');
 assert.match(moduleScript, /function updateCrossfadeProgress\(fromFrame=false\)/, 'crossfade volume ramps must update smoothly without spawning duplicate animation loops');
 assert.match(moduleScript, /secondaryGainNode\.gain\.setTargetAtTime\(playerVolume\*crossfadeProgress/, 'crossfade must fade in the next track through Web Audio where supported');
 assert.match(moduleScript, /wrld-crossfade-seconds/, 'crossfade preference must persist between visits');

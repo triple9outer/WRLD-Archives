@@ -1,4 +1,4 @@
-const CACHE = 'wrld-archives-shell-v17';
+const CACHE = 'wrld-archives-shell-v18';
 const SHELL = ['./', './index.html', './catalog.mjs', './cover-index.mjs', './manifest.webmanifest', './wrld-icon.svg'];
 self.addEventListener('install', event => {
   event.waitUntil(caches.open(CACHE).then(cache => cache.addAll(SHELL)));
@@ -10,7 +10,8 @@ self.addEventListener('activate', event => {
 });
 self.addEventListener('fetch', event => {
   const request = event.request;
-  if (request.method !== 'GET' || new URL(request.url).origin !== self.location.origin) return;
+  const url = new URL(request.url);
+  if (request.method !== 'GET' || url.origin !== self.location.origin || url.pathname.endsWith('/api/lyrics')) return;
   event.respondWith(fetch(request).then(response => {
     if (response.ok) {
       const copy = response.clone();

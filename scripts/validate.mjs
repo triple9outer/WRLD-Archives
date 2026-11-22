@@ -17,7 +17,7 @@ assert.match(html, /<script type="module">[\s\S]*?import \{ filterCatalogTracks,
 assert.match(worker, /'\.\/catalog\.mjs'/, 'service worker must cache the catalog module');
 assert.match(worker, /'\.\/cover-index\.mjs'/, 'service worker must cache the bundled cover map');
 assert.match(worker, /'\.\/library-tools\.mjs'/, 'service worker must cache the local library tools module');
-assert.match(worker, /wrld-archives-shell-v20/, 'service worker cache must refresh for library tools and player updates');
+assert.match(worker, /wrld-archives-shell-v21/, 'service worker cache must refresh for library tools and player updates');
 assert.match(worker, /url\.pathname\.endsWith\('\/api\/lyrics'\)/, 'service worker must never cache licensed lyric responses');
 assert.match(html, /import coverIndex from '\.\/cover-index\.mjs'/, 'app must import the bundled cover map');
 assert.match(html, /staticCoverPathForTrack\(track\)\|\|staticCoverPathForAlbum/, 'covers must have a public bundled fallback');
@@ -67,6 +67,12 @@ assert.match(html, /id="sideLibraryCheckup"/, 'sidebar must launch Library Check
 assert.match(html, /id="sideWrldReplay"/, 'sidebar must launch WRLD Replay');
 assert.match(html, /id="desktopQueueRows"/, 'ambient queue must provide a scrollable list container');
 assert.match(html, /Liquid glass finish for catalog, player, dialogs, controls, and navigation/, 'glass styling must cover the app surfaces');
+assert.match(html, /id="desktopCoverBackdropImg"/, 'Ambient desktop must display the current cover as a background image');
+assert.match(moduleScript, /function setDesktopCoverBackdrop\(/, 'Ambient desktop must update its animated cover backdrop as tracks change');
+assert.match(html, /@keyframes desktopCoverDrift/, 'the cover art background must animate gently');
+assert.match(html, /overflow-wrap:anywhere;word-break:normal;hyphens:none/, 'song titles must wrap without clipping or awkward hyphenation');
+assert.match(html, /@media\(max-width:1400px\) and \(min-width:701px\)/, 'tablet song rows must give titles a full-width line above controls');
+assert.match(html, /@media\(max-width:700px\)\{\.row\{grid-template-columns:minmax\(0,1fr\)/, 'phone song rows must stack titles and controls');
 assert.match(moduleScript, /function syncDesktopLyrics\(/, 'ambient captions must follow timed lyric playback');
 assert.match(html, /id="findTimedLyrics"/, 'player must expose the licensed synced-lyrics lookup');
 assert.match(moduleScript, /async function fetchProviderLyrics\(/, 'player must fetch timed lyrics from its same-origin backend');

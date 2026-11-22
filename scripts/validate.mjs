@@ -17,7 +17,7 @@ assert.match(html, /<script type="module">[\s\S]*?import \{ filterCatalogTracks,
 assert.match(worker, /'\.\/catalog\.mjs'/, 'service worker must cache the catalog module');
 assert.match(worker, /'\.\/cover-index\.mjs'/, 'service worker must cache the bundled cover map');
 assert.match(worker, /'\.\/library-tools\.mjs'/, 'service worker must cache the local library tools module');
-assert.match(worker, /wrld-archives-shell-v22/, 'service worker cache must refresh for library tools and player updates');
+assert.match(worker, /wrld-archives-shell-v23/, 'service worker cache must refresh for library tools and player updates');
 assert.match(worker, /url\.pathname\.endsWith\('\/api\/lyrics'\)/, 'service worker must never cache licensed lyric responses');
 assert.match(html, /import coverIndex from '\.\/cover-index\.mjs'/, 'app must import the bundled cover map');
 assert.match(html, /staticCoverPathForTrack\(track\)\|\|staticCoverPathForAlbum/, 'covers must have a public bundled fallback');
@@ -75,6 +75,11 @@ assert.match(html, /@media\(max-width:1400px\) and \(min-width:701px\)/, 'tablet
 assert.match(html, /@media\(max-width:700px\)\{\.row\{grid-template-columns:minmax\(0,1fr\)/, 'phone song rows must stack titles and controls');
 assert.match(html, /id="playerVolume"/, 'main player must provide a volume bar');
 assert.match(html, /id="desktopVolume"/, 'Ambient desktop must provide a volume bar');
+assert.match(html, /id="surpriseMe"/, 'catalog must provide random song discovery');
+assert.match(html, /id="surprisePick"/, 'random discovery must show a song card');
+assert.match(moduleScript, /function currentFilteredRows\(/, 'random discovery must respect active catalog filters');
+assert.match(moduleScript, /function chooseSurprisePick\(/, 'random discovery must choose a catalog entry');
+assert.match(moduleScript, /requestAnimationFrame\(focusSurprisePick\)/, 'random discovery must reveal and focus its selected song');
 assert.match(moduleScript, /function setPlayerVolume\(/, 'volume bars must control the shared player volume');
 assert.match(moduleScript, /wrld-player-volume/, 'player volume preference must persist locally');
 assert.match(moduleScript, /audioGainNode=audioContext\.createGain\(\)/, 'mobile volume control must use Web Audio gain where native volume is unavailable');

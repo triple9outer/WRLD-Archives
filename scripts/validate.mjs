@@ -16,7 +16,8 @@ const { default: coverIndex } = await import('../cover-index.mjs');
 assert.match(html, /<script type="module">[\s\S]*?import \{ filterCatalogTracks, mergeApiAlbums, mergeApiCatalog \} from '\.\/catalog\.mjs';/);
 assert.match(worker, /'\.\/catalog\.mjs'/, 'service worker must cache the catalog module');
 assert.match(worker, /'\.\/cover-index\.mjs'/, 'service worker must cache the bundled cover map');
-assert.match(worker, /wrld-archives-shell-v18/, 'service worker cache must refresh for synced lyric lookup');
+assert.match(worker, /'\.\/library-tools\.mjs'/, 'service worker must cache the local library tools module');
+assert.match(worker, /wrld-archives-shell-v19/, 'service worker cache must refresh for library tools and player updates');
 assert.match(worker, /url\.pathname\.endsWith\('\/api\/lyrics'\)/, 'service worker must never cache licensed lyric responses');
 assert.match(html, /import coverIndex from '\.\/cover-index\.mjs'/, 'app must import the bundled cover map');
 assert.match(html, /staticCoverPathForTrack\(track\)\|\|staticCoverPathForAlbum/, 'covers must have a public bundled fallback');
@@ -55,6 +56,17 @@ assert.match(html, /id="sideDesktopMode"/, 'sidebar must expose ambient desktop 
 assert.match(moduleScript, /function openDesktopMode\(/, 'ambient desktop mode must be launchable');
 assert.match(moduleScript, /function drawDesktopOrb\(/, 'ambient desktop mode must include an audio-reactive orb');
 assert.match(moduleScript, /function renderDesktopQueue\(/, 'ambient desktop mode must display the play queue');
+assert.match(moduleScript, /function renderDesktopQueue\(scrollToPlaying=false\)/, 'ambient queue must support focused scrolling to the current song');
+assert.doesNotMatch(moduleScript, /desktopQueueRows[\s\S]{0,400}\.slice\(0,7\)/, 'ambient queue must show every queued song');
+assert.match(moduleScript, /active\?\.scrollIntoView\(/, 'ambient queue must scroll the playing song into view');
+assert.match(moduleScript, /function scanLibraryCheckup\(/, 'Library Checkup must inspect linked files locally');
+assert.match(moduleScript, /function renderWrldReplay\(/, 'WRLD Replay must render local listening statistics');
+assert.match(moduleScript, /function setupMediaSession\(/, 'device media controls must be registered where supported');
+assert.match(moduleScript, /audioElement\.addEventListener\('playing',recordTrackStart\)/, 'WRLD Replay must count actual track playback');
+assert.match(html, /id="sideLibraryCheckup"/, 'sidebar must launch Library Checkup');
+assert.match(html, /id="sideWrldReplay"/, 'sidebar must launch WRLD Replay');
+assert.match(html, /id="desktopQueueRows"/, 'ambient queue must provide a scrollable list container');
+assert.match(html, /Liquid glass finish for catalog, player, dialogs, controls, and navigation/, 'glass styling must cover the app surfaces');
 assert.match(moduleScript, /function syncDesktopLyrics\(/, 'ambient captions must follow timed lyric playback');
 assert.match(html, /id="findTimedLyrics"/, 'player must expose the licensed synced-lyrics lookup');
 assert.match(moduleScript, /async function fetchProviderLyrics\(/, 'player must fetch timed lyrics from its same-origin backend');
@@ -67,6 +79,9 @@ assert.match(lyricsApi, /pixel_tracking_url|script_tracking_url/, 'the backend m
 assert.match(lyricsApi, /cache-control': 'no-store/, 'licensed lyric responses must not be cached');
 assert.match(moduleScript, /async function toggleDesktopFullscreen\(/, 'ambient mode must have an explicit fullscreen action');
 assert.match(moduleScript, /target\.requestFullscreen\|\|target\.webkitRequestFullscreen/, 'fullscreen must target the ambient dialog and support WebKit');
+assert.match(moduleScript, /requestDesktopFullscreen\(true\)/, 'opening ambient desktop must automatically attempt native fullscreen from the user action');
+assert.match(moduleScript, /\[document\.documentElement,desktopStage\]/, 'fullscreen must try the page root and modal for browser compatibility');
+assert.match(moduleScript, /fullscreen-fallback/, 'fullscreen must keep an immersive viewport fallback when the browser blocks native fullscreen');
 assert.match(html, /id="desktopFullscreenStatus"/, 'fullscreen failures must report a useful status');
 assert.match(moduleScript, /function formatLrcTimestamp\(/, 'manual lyric sync must save timed LRC lines');
 assert.match(moduleScript, /function buildSyncedLrc\(/, 'manual lyric sync must serialize every marked line');
@@ -91,7 +106,7 @@ const temp = mkdtempSync(join(tmpdir(), 'wrld-archives-check-'));
 try {
   const sourcePath = join(temp, 'inline-app.mjs');
   writeFileSync(sourcePath, moduleScript);
-  for (const path of [sourcePath, join(root, 'catalog.mjs'), join(root, 'service-worker.js')]) {
+  for (const path of [sourcePath, join(root, 'catalog.mjs'), join(root, 'library-tools.mjs'), join(root, 'service-worker.js')]) {
     const result = spawnSync(process.execPath, ['--check', path], { encoding: 'utf8' });
     assert.equal(result.status, 0, `${path}: ${result.stderr || result.stdout}`);
   }

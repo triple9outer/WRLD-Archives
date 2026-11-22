@@ -42,7 +42,12 @@ The API uses Musixmatch's `matcher.subtitle.get` endpoint, which returns synced 
 - To link a mounted external drive, use **Link audio & covers from drive** over HTTPS or localhost in a browser with folder access (such as Chrome or Edge), then select the folder. The app scans subfolders, matches known filenames to catalog entries, and adds non-matching audio as local Drive file entries so those files remain visible and playable. Embedded cover art is extracted automatically. Each device and visitor must select their own folder.
 - The sidebar’s **Drive songs** view filters the catalog to entries linked from that browser’s selected drive.
 - **Shuffle Drive** builds a randomized queue of every drive-linked song and plays each once per pass.
-- **Ambient desktop** opens a responsive, clock-led night view with an audio-reactive orbit, up-next queue, glass playback bar, and fullscreen control. The orb displays the current line from a timed local `.lrc` file as the song plays. It reuses the current player and local cover art.
+- **Ambient desktop** opens a responsive, clock-led night view with an audio-reactive orbit, up-next queue, glass playback bar, and fullscreen control. Opening it attempts native fullscreen from the click; the control can retry or exit. Some embedded previews block browser fullscreen, so the player falls back to filling the app window and shows why. The orb displays the current line from a timed local `.lrc` file as the song plays. It reuses the current player and local cover art.
+- The Ambient desktop queue shows every queued song in a scrollable panel, brings the playing song into view when playback changes, and keeps the queue scroll independent from the visualizer.
+- **Library Checkup** scans files linked on this device for missing or unreadable audio, likely unsupported browser formats, possible same-name/same-size duplicates, missing covers or lyrics, and local drive entries. Duplicate matches are only suggestions; the scan never removes files.
+- **WRLD Replay** keeps private play counts and listening time in this browser’s local storage and summarizes the most played songs and projects. These stats are not synced or shared.
+- Browser Media Session controls expose current song metadata, artwork, play/pause, skip, and seeking to lock-screen, keyboard, headset, and operating-system media controls where the browser and device support them.
+- The catalog, navigation, player, queue, forms, and dialogs use a shared liquid-glass treatment with translucent surfaces, soft highlights, and reduced-motion support.
 - Use **Share** on a playlist to send it through the device share sheet or download a playlist JSON file. Importing a shared playlist matches tracks by source ID, title, and version; the share file contains track metadata only and no audio.
 - Songs with lyric files automatically open the larger player when playback starts. Timed `.lrc` lines highlight and scroll with playback; **Auto-open lyrics when playback starts** can be turned off in that player. Plain `.txt` lyrics need timestamps to follow the audio. Automatic captions look up available lines from Musixmatch when the Cloudflare endpoint is configured; turn this on or off in the expanded player.
 - Add `.lrc` or `.txt` lyric files per song, import multiple files with **Import lyrics**, or place matching `.lrc` files beside audio in a linked folder. Imports match filenames to song titles and versions; existing lyric attachments are left untouched. Timed `.lrc` lines follow playback. Use **Sync lyrics to audio** in the expanded player to mark each plain-text line as it starts and save it as timed lyrics. Lyric files stay in this browser. Song rows link to Genius search results, but the app does not scrape or bundle copyrighted lyrics.
@@ -58,7 +63,7 @@ Requires Node.js 20 or newer. Run the same checks used by GitHub Actions:
 
 ```sh
 node scripts/validate.mjs
-node --test catalog.test.mjs
+node --test catalog.test.mjs lyrics-api.test.mjs library-tools.test.mjs
 ```
 
 ## Local desktop assistant

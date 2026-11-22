@@ -15,7 +15,7 @@ const { default: coverIndex } = await import('../cover-index.mjs');
 assert.match(html, /<script type="module">[\s\S]*?import \{ filterCatalogTracks, mergeApiAlbums, mergeApiCatalog \} from '\.\/catalog\.mjs';/);
 assert.match(worker, /'\.\/catalog\.mjs'/, 'service worker must cache the catalog module');
 assert.match(worker, /'\.\/cover-index\.mjs'/, 'service worker must cache the bundled cover map');
-assert.match(worker, /wrld-archives-shell-v15/, 'service worker cache must refresh for the ambient view');
+assert.match(worker, /wrld-archives-shell-v16/, 'service worker cache must refresh for the fullscreen fix');
 assert.match(html, /import coverIndex from '\.\/cover-index\.mjs'/, 'app must import the bundled cover map');
 assert.match(html, /staticCoverPathForTrack\(track\)\|\|staticCoverPathForAlbum/, 'covers must have a public bundled fallback');
 assert.equal(manifest.name, 'WRLD Archives');
@@ -48,6 +48,8 @@ assert.match(html, /id="sideDesktopMode"/, 'sidebar must expose ambient desktop 
 assert.match(moduleScript, /function openDesktopMode\(/, 'ambient desktop mode must be launchable');
 assert.match(moduleScript, /function drawDesktopOrb\(/, 'ambient desktop mode must include an audio-reactive orb');
 assert.match(moduleScript, /function renderDesktopQueue\(/, 'ambient desktop mode must display the play queue');
+assert.match(moduleScript, /document\.documentElement\.requestFullscreen\(\)/, 'fullscreen must target a supported document element');
+assert.match(html, /id="desktopFullscreenStatus"/, 'fullscreen failures must report a useful status');
 assert.match(moduleScript, /function formatLrcTimestamp\(/, 'manual lyric sync must save timed LRC lines');
 assert.match(moduleScript, /function buildSyncedLrc\(/, 'manual lyric sync must serialize every marked line');
 assert.match(moduleScript, /async function saveSyncedLyrics\(/, 'manual lyric sync must save to the local lyric store');

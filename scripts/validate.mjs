@@ -17,7 +17,7 @@ assert.match(html, /<script type="module">[\s\S]*?import \{ filterCatalogTracks,
 assert.match(worker, /'\.\/catalog\.mjs'/, 'service worker must cache the catalog module');
 assert.match(worker, /'\.\/cover-index\.mjs'/, 'service worker must cache the bundled cover map');
 assert.match(worker, /'\.\/library-tools\.mjs'/, 'service worker must cache the local library tools module');
-assert.match(worker, /wrld-archives-shell-v19/, 'service worker cache must refresh for library tools and player updates');
+assert.match(worker, /wrld-archives-shell-v20/, 'service worker cache must refresh for library tools and player updates');
 assert.match(worker, /url\.pathname\.endsWith\('\/api\/lyrics'\)/, 'service worker must never cache licensed lyric responses');
 assert.match(html, /import coverIndex from '\.\/cover-index\.mjs'/, 'app must import the bundled cover map');
 assert.match(html, /staticCoverPathForTrack\(track\)\|\|staticCoverPathForAlbum/, 'covers must have a public bundled fallback');
@@ -82,6 +82,10 @@ assert.match(moduleScript, /target\.requestFullscreen\|\|target\.webkitRequestFu
 assert.match(moduleScript, /requestDesktopFullscreen\(true\)/, 'opening ambient desktop must automatically attempt native fullscreen from the user action');
 assert.match(moduleScript, /\[document\.documentElement,desktopStage\]/, 'fullscreen must try the page root and modal for browser compatibility');
 assert.match(moduleScript, /fullscreen-fallback/, 'fullscreen must keep an immersive viewport fallback when the browser blocks native fullscreen');
+assert.match(moduleScript, /function applyDesktopCoverTheme\(image\)/, 'Ambient desktop must sample the current song cover');
+assert.match(moduleScript, /function resetDesktopTheme\(/, 'Ambient desktop must restore its default palette when cover art is unavailable');
+assert.match(moduleScript, /--cover-primary-soft/, 'cover colors must flow into the Ambient desktop design');
+assert.match(moduleScript, /context\.getImageData\(0,0,24,24\)/, 'cover palette must be sampled from actual artwork pixels');
 assert.match(html, /id="desktopFullscreenStatus"/, 'fullscreen failures must report a useful status');
 assert.match(moduleScript, /function formatLrcTimestamp\(/, 'manual lyric sync must save timed LRC lines');
 assert.match(moduleScript, /function buildSyncedLrc\(/, 'manual lyric sync must serialize every marked line');

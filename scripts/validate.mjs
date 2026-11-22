@@ -44,6 +44,10 @@ assert.match(html, /id="nowPlayingDialog"/, 'expanded player dialog must exist')
 assert.match(html, /id="lyricSyncStart"/, 'expanded player must expose lyric sync');
 assert.match(html, /id="lyricSyncMark"/, 'lyric sync must let listeners mark line starts');
 assert.match(html, /id="autoShowLyrics"/, 'expanded player must expose the automatic lyric view toggle');
+assert.match(html, /id="autoFindLyrics"/, 'expanded player must expose the automatic synced-caption lookup toggle');
+assert.match(moduleScript, /async function autoFindLyricsIfNeeded\(/, 'playback must automatically check for synced captions');
+assert.match(moduleScript, /addEventListener\('play',autoFindLyricsIfNeeded\)/, 'automatic caption lookup must start on audio playback');
+assert.match(moduleScript, /localStorage\.setItem\('jw-auto-find-lyrics'/, 'automatic caption preference must persist');
 assert.match(moduleScript, /if\(autoShowLyrics&&t\.hasLyrics&&!desktopStage\.open\)/, 'playback must auto-open lyrics for tracks with a lyric file');
 assert.match(html, /id="desktopStage"/, 'ambient desktop mode dialog must exist');
 assert.match(html, /id="desktopLyricLine"/, 'ambient view must include a current lyric caption');

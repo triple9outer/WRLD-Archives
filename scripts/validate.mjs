@@ -19,7 +19,7 @@ assert.match(html, /<script type="module">[\s\S]*?import \{ filterCatalogTracks,
 assert.match(worker, /'\.\/catalog\.mjs'/, 'service worker must cache the catalog module');
 assert.match(worker, /'\.\/cover-index\.mjs'/, 'service worker must cache the bundled cover map');
 assert.match(worker, /'\.\/library-tools\.mjs'/, 'service worker must cache the local library tools module');
-assert.match(worker, /wrld-archives-shell-v28/, 'service worker cache must refresh for library tools and player updates');
+assert.match(worker, /wrld-archives-shell-v29/, 'service worker cache must refresh for library tools and player updates');
 assert.ok(worker.includes('/api\\/(lyrics|cloud-audio|music-video)'), 'service worker must never cache API responses');
 assert.match(html, /import coverIndex from '\.\/cover-index\.mjs'/, 'app must import the bundled cover map');
 assert.match(html, /staticCoverPathForTrack\(track\)\|\|staticCoverPathForAlbum/, 'covers must have a public bundled fallback');
@@ -47,7 +47,7 @@ assert.match(html, /id="shuffleLibraryTrack"/, 'player must expose whole-library
 assert.match(moduleScript, /function shuffleLibrarySongs\(/, 'whole-library shuffle must build a randomized queue');
 assert.match(moduleScript, /tracks\.filter\(canPlayTrack\)\.map\(t=>t\.id\)/, 'whole-library shuffle must include every track with playable audio');
 assert.match(moduleScript, /function canPlayTrack\(/, 'playability must include local and public cloud audio');
-assert.match(moduleScript, /async function playTrack\(t\)\{if\(!t\)return;try\{const cloudUrl=cloudAudioUrl\(t\);if\(cloudUrl\)\{play\(t,cloudUrl\);return\}(?:if\(t\.hasAudio&&crossfadeSeconds\)ensureAudioAnalyser\(\)\.catch\(\(\)=>\{\}\);)?const file=await readAudio\(t\.id\)/, 'matching cloud audio must take priority over a local drive copy');
+assert.match(moduleScript, /async function playTrack\(t\)[\s\S]{0,300}cloudAudioUrl\(t\)[\s\S]{0,300}readAudio\(t\.id\)/, 'cloud audio must take priority over local drive files');
 assert.match(moduleScript, /Cloud copy takes priority/, 'catalog must indicate when a cloud file overrides linked drive playback');
 assert.match(html, /id="grailsTab"/, 'catalog must expose the local Grails list');
 assert.match(html, /id="cloudStorageDialog"/, 'catalog must expose public audio storage management');
@@ -113,6 +113,11 @@ assert.match(moduleScript, /function chooseSurprisePick\(/, 'random discovery mu
 assert.match(moduleScript, /requestAnimationFrame\(focusSurprisePick\)/, 'random discovery must reveal and focus its selected song');
 assert.match(moduleScript, /function setPlayerVolume\(/, 'volume bars must control the shared player volume');
 assert.match(html, /id="crossfadeDuration"/, 'player must expose a persistent crossfade duration setting');
+assert.match(html, /option value="auto">Auto · best moment/, 'crossfade must offer automatic transition timing');
+assert.match(moduleScript, /function readAutoMixEnergy\(/, 'automatic transitions must inspect audio energy near the ending');
+assert.match(moduleScript, /performance\.now\(\)-autoMixQuietSince>=320/, 'automatic transitions must wait for a short quiet moment');
+assert.match(moduleScript, /remaining>5\*rate/, 'automatic transitions must have a safe end-of-track fallback');
+assert.match(moduleScript, /localStorage\.setItem\('wrld-crossfade-mode'/, 'transition mode must persist');
 assert.match(moduleScript, /function maybeStartCrossfade\(/, 'player must preload and start the next queued track before the current one ends');
 assert.match(moduleScript, /function updateCrossfadeProgress\(fromFrame=false\)/, 'crossfade volume ramps must update smoothly without spawning duplicate animation loops');
 assert.match(moduleScript, /secondaryGainNode\.gain\.setTargetAtTime\(playerVolume\*crossfadeProgress/, 'crossfade must fade in the next track through Web Audio where supported');

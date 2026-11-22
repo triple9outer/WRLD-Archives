@@ -4,6 +4,7 @@ import { mkdirSync, readFileSync, readdirSync, rmSync, writeFileSync } from 'nod
 import { basename, extname, join, resolve } from 'node:path';
 import { tmpdir } from 'node:os';
 import { mergeApiAlbums, mergeApiCatalog } from '../catalog.mjs';
+import coverIndex from '../cover-index.mjs';
 
 const inputRoot = process.argv[2] ? resolve(process.argv[2]) : '';
 if (!inputRoot) throw new Error('Usage: node scripts/build-covers.mjs /path/to/audio-folder');
@@ -77,35 +78,41 @@ function setFirst(target, key, value) {
   if (key && !target[key]) target[key] = value;
 }
 
-const songResponse = await fetch('https://juicewrldapi.com/juicewrld/songs/?all=true&versions=true');
-if (!songResponse.ok) throw new Error(`Song catalog request failed: ${songResponse.status}`);
-const songs = await songResponse.json();
-let tracks = mergeApiCatalog([], songs, () => '').tracks;
+let tracks = [];
 try {
-  const albumResponse = await fetch('https://juicewrldapi.com/juicewrld/albums/?page_size=100');
-  if (albumResponse.ok) {
-    const pages = [];
-    let url = albumResponse.url;
-    for (let page = 0; url && page < 10; page++) {
-      const response = page === 0 ? albumResponse : await fetch(url);
-      if (!response.ok) break;
-      const data = await response.json();
-      if (Array.isArray(data)) { pages.push(...data); break; }
-      if (!Array.isArray(data.results)) break;
-      pages.push(...data.results);
-      url = data.next || '';
+  const songResponse = await fetch('https://juicewrldapi.com/juicewrld/songs/?all=true&versions=true');
+  if (!songResponse.ok) throw new Error(`Song catalog request failed: ${songResponse.status}`);
+  const songs = await songResponse.json();
+  tracks = mergeApiCatalog([], songs, () => '').tracks;
+  try {
+    const albumResponse = await fetch('https://juicewrldapi.com/juicewrld/albums/?page_size=100');
+    if (albumResponse.ok) {
+      const pages = [];
+      let url = albumResponse.url;
+      for (let page = 0; url && page < 10; page++) {
+        const response = page === 0 ? albumResponse : await fetch(url);
+        if (!response.ok) break;
+        const data = await response.json();
+        if (Array.isArray(data)) { pages.push(...data); break; }
+        if (!Array.isArray(data.results)) break;
+        pages.push(...data.results);
+        url = data.next || '';
+      }
+      tracks = mergeApiAlbums(tracks, pages, () => '').tracks;
     }
-    tracks = mergeApiAlbums(tracks, pages, () => '').tracks;
-  }
-} catch { /* Song art still builds if the album endpoint is temporarily unavailable. */ }
+  } catch { /* Use local audio filenames if album metadata is offline. */ }
+} catch (error) {
+  console.warn(`Catalog metadata is unavailable (${error.message}); embedded artwork will still map by local filenames.`);
+}
 
 mkdirSync(coversRoot, { recursive: true });
 const tempRoot = join(tmpdir(), `wrld-cover-build-${process.pid}`);
 mkdirSync(tempRoot, { recursive: true });
-const index = { sourceIds: {}, trackKeys: {}, names: {}, localFiles: {}, albums: {} };
+const index = structuredClone(coverIndex);
 const files = walk(inputRoot).sort((a, b) => a.localeCompare(b));
 const seenImages = new Map();
-let extracted = 0;
+let embeddedCovers = 0;
+let sidecarCovers = 0;
 let filesWithoutArt = 0;
 let invalidArtwork = 0;
 let totalBytes = 0;
@@ -120,27 +127,23 @@ function addTrackMappings(track, asset) {
   for (const album of [track.album, ...(track.albumMemberships || [])]) setFirst(index.albums, normName(album), asset);
 }
 
-for (const filePath of files) {
-  const filename = basename(filePath);
-  const data = readFileSync(filePath);
-  const cover = await extractEmbeddedCover(new File([data], filename));
-  if (!cover) { filesWithoutArt++; continue; }
-  const raw = Buffer.from(await cover.arrayBuffer());
+function saveArtwork(raw, extension = '.jpg') {
   const hash = createHash('sha256').update(raw).digest('hex');
   let asset = seenImages.get(hash);
-  if (!asset) {
-    const ext = cover.type === 'image/png' ? '.png' : cover.type === 'image/webp' ? '.webp' : cover.type === 'image/gif' ? '.gif' : '.jpg';
-    const tempFile = join(tempRoot, `${hash}${ext}`);
-    const outputFile = join(coversRoot, `${hash.slice(0, 20)}.jpg`);
-    writeFileSync(tempFile, raw);
-    const result = spawnSync('sips', ['-Z', '640', '-s', 'format', 'jpeg', '-s', 'formatOptions', '82', tempFile, '--out', outputFile], { encoding: 'utf8' });
-    if (result.status !== 0) { invalidArtwork++; continue; }
-    asset = `assets/covers/${basename(outputFile)}`;
-    seenImages.set(hash, asset);
-    totalBytes += readFileSync(outputFile).length;
-  }
-  extracted++;
+  if (asset) return asset;
+  const tempFile = join(tempRoot, `${hash}${extension}`);
+  const outputFile = join(coversRoot, `${hash.slice(0, 20)}.jpg`);
+  writeFileSync(tempFile, raw);
+  const result = spawnSync('sips', ['-Z', '640', '-s', 'format', 'jpeg', '-s', 'formatOptions', '82', tempFile, '--out', outputFile], { encoding: 'utf8' });
+  if (result.status !== 0) { invalidArtwork++; return ''; }
+  asset = `assets/covers/${basename(outputFile)}`;
+  seenImages.set(hash, asset);
+  totalBytes += readFileSync(outputFile).length;
+  return asset;
+}
 
+function mapArtworkToAudio(filename, asset) {
+  if (!asset) return;
   const track = matchAudioFile(filename, tracks);
   if (track) addTrackMappings(track, asset);
   else {
@@ -151,7 +154,46 @@ for (const filePath of files) {
   }
 }
 
-const manifest = `// Built from embedded artwork in the supplied local audio folder.\nexport default ${JSON.stringify(index)};\n`;
+for (const filePath of files) {
+  const filename = basename(filePath);
+  const data = readFileSync(filePath);
+  const cover = await extractEmbeddedCover(new File([data], filename));
+  if (!cover) { filesWithoutArt++; continue; }
+  const raw = Buffer.from(await cover.arrayBuffer());
+  const extension = cover.type === 'image/png' ? '.png' : cover.type === 'image/webp' ? '.webp' : cover.type === 'image/gif' ? '.gif' : '.jpg';
+  const asset = saveArtwork(raw, extension);
+  if (!asset) continue;
+  embeddedCovers++;
+  mapArtworkToAudio(filename, asset);
+}
+
+const imageExt = /\.(avif|gif|jpe?g|png|webp)$/i;
+function walkImages(dir) {
+  return readdirSync(dir, { withFileTypes: true }).flatMap(entry => {
+    const path = join(dir, entry.name);
+    return entry.isDirectory() ? walkImages(path) : imageExt.test(entry.name) ? [path] : [];
+  });
+}
+const audioByStem = new Map();
+for (const filePath of files) {
+  const stem = basename(filePath).replace(audioExt, '').normalize('NFKC').toLowerCase();
+  const matches = audioByStem.get(stem) || [];
+  matches.push(filePath);
+  audioByStem.set(stem, matches);
+}
+for (const imagePath of walkImages(inputRoot).sort((a, b) => a.localeCompare(b))) {
+  const filename = basename(imagePath);
+  const stem = filename.replace(imageExt, '');
+  const matches = audioByStem.get(stem.normalize('NFKC').toLowerCase()) || [];
+  if (!matches.length) continue;
+  const raw = readFileSync(imagePath);
+  const asset = saveArtwork(raw, extname(imagePath).toLowerCase());
+  if (!asset) continue;
+  sidecarCovers++;
+  for (const audioPath of matches) mapArtworkToAudio(basename(audioPath), asset);
+}
+
+const manifest = `// Built from embedded and sidecar artwork in the supplied local audio folder.\nexport default ${JSON.stringify(index)};\n`;
 writeFileSync(join(root, 'cover-index.mjs'), manifest);
 rmSync(tempRoot, { recursive: true, force: true });
-console.log(JSON.stringify({ audioFiles: files.length, filesWithArtwork: extracted, filesWithoutArtwork: filesWithoutArt, invalidArtwork, uniqueCovers: seenImages.size, optimizedBytes: totalBytes }));
+console.log(JSON.stringify({ audioFiles: files.length, embeddedCovers, sidecarCovers, filesWithoutEmbeddedArt: filesWithoutArt, invalidArtwork, uniqueCovers: seenImages.size, optimizedBytes: totalBytes }));

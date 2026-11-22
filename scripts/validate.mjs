@@ -10,6 +10,8 @@ const html = readFileSync(join(root, 'index.html'), 'utf8');
 const catalog = readFileSync(join(root, 'catalog.mjs'), 'utf8');
 const worker = readFileSync(join(root, 'service-worker.js'), 'utf8');
 const lyricsApi = readFileSync(join(root, 'functions', 'api', 'lyrics.js'), 'utf8');
+const cloudAudioApi = readFileSync(join(root, 'functions', 'api', 'cloud-audio.js'), 'utf8');
+const musicVideoApi = readFileSync(join(root, 'functions', 'api', 'music-video.js'), 'utf8');
 const manifest = JSON.parse(readFileSync(join(root, 'manifest.webmanifest'), 'utf8'));
 const { default: coverIndex } = await import('../cover-index.mjs');
 
@@ -17,8 +19,8 @@ assert.match(html, /<script type="module">[\s\S]*?import \{ filterCatalogTracks,
 assert.match(worker, /'\.\/catalog\.mjs'/, 'service worker must cache the catalog module');
 assert.match(worker, /'\.\/cover-index\.mjs'/, 'service worker must cache the bundled cover map');
 assert.match(worker, /'\.\/library-tools\.mjs'/, 'service worker must cache the local library tools module');
-assert.match(worker, /wrld-archives-shell-v24/, 'service worker cache must refresh for library tools and player updates');
-assert.match(worker, /url\.pathname\.endsWith\('\/api\/lyrics'\)/, 'service worker must never cache licensed lyric responses');
+assert.match(worker, /wrld-archives-shell-v25/, 'service worker cache must refresh for library tools and player updates');
+assert.ok(worker.includes('/api\\/(lyrics|cloud-audio|music-video)'), 'service worker must never cache API responses');
 assert.match(html, /import coverIndex from '\.\/cover-index\.mjs'/, 'app must import the bundled cover map');
 assert.match(html, /staticCoverPathForTrack\(track\)\|\|staticCoverPathForAlbum/, 'covers must have a public bundled fallback');
 assert.equal(manifest.name, 'WRLD Archives');
@@ -41,6 +43,16 @@ const savedAlbumRead = moduleScript.indexOf("localStorage.getItem('jw-released-a
 assert.ok(albumDeclaration >= 0 && savedAlbumRead > albumDeclaration, 'saved album state must load after its default value is initialized');
 assert.match(moduleScript, /function shuffleIds\(/, 'shuffle must randomize queue order without repeats during a pass');
 assert.match(html, /id="shuffleDriveTrack"/, 'player must expose drive-wide shuffle');
+assert.match(html, /id="shuffleLibraryTrack"/, 'player must expose whole-library shuffle');
+assert.match(moduleScript, /function shuffleLibrarySongs\(/, 'whole-library shuffle must build a randomized queue');
+assert.match(moduleScript, /tracks\.filter\(canPlayTrack\)\.map\(t=>t\.id\)/, 'whole-library shuffle must include every track with playable audio');
+assert.match(moduleScript, /function canPlayTrack\(/, 'playability must include local and public cloud audio');
+assert.match(html, /id="grailsTab"/, 'catalog must expose the local Grails list');
+assert.match(html, /id="cloudStorageDialog"/, 'catalog must expose public audio storage management');
+assert.match(cloudAudioApi, /rightsCleared !== 'true'/, 'public cloud audio must be hidden unless the upload is rights-cleared');
+assert.match(cloudAudioApi, /WRLD_CLOUD_ADMIN_TOKEN/, 'public audio uploads must require the configured admin secret');
+assert.match(musicVideoApi, /status.*released/, 'music-video lookup must be limited to released tracks');
+assert.match(musicVideoApi, /videoEmbeddable: 'true'/, 'music-video lookup must request embeddable videos');
 assert.match(html, /id="nowPlayingDialog"/, 'expanded player dialog must exist');
 assert.match(html, /id="lyricSyncStart"/, 'expanded player must expose lyric sync');
 assert.match(html, /id="lyricSyncMark"/, 'lyric sync must let listeners mark line starts');
@@ -132,7 +144,7 @@ const temp = mkdtempSync(join(tmpdir(), 'wrld-archives-check-'));
 try {
   const sourcePath = join(temp, 'inline-app.mjs');
   writeFileSync(sourcePath, moduleScript);
-  for (const path of [sourcePath, join(root, 'catalog.mjs'), join(root, 'library-tools.mjs'), join(root, 'service-worker.js')]) {
+  for (const path of [sourcePath, join(root, 'catalog.mjs'), join(root, 'library-tools.mjs'), join(root, 'service-worker.js'), join(root, 'functions', 'api', 'lyrics.js'), join(root, 'functions', 'api', 'cloud-audio.js'), join(root, 'functions', 'api', 'music-video.js'), join(root, 'official-album-covers.mjs')]) {
     const result = spawnSync(process.execPath, ['--check', path], { encoding: 'utf8' });
     assert.equal(result.status, 0, `${path}: ${result.stderr || result.stdout}`);
   }

@@ -1,6 +1,6 @@
 # WRLD Archives
 
-WRLD Archives is an installable music catalog for Juice WRLD. Catalog edits and user-selected audio stay in the browser. Audio linked through **Link audio & covers from drive** stays on the selected drive; the browser stores file handles locally and reads each file only for playback. Per-song **Add audio** copies that one file into browser storage. User-provided lyric files and personal cover overrides are stored locally too. These local files are not shared; licensed Musixmatch lyrics are fetched only when requested and are not saved. Public audio delivery can be enabled only for recordings the project owns or has explicit distribution rights to; do not publish copyrighted recordings without authorization.
+WRLD Archives is an installable music catalog for Juice WRLD. Catalog edits and user-selected audio stay in the browser. Audio linked through **Link audio & covers from drive** stays on the selected drive; the browser stores file handles locally and reads each file only for playback. Per-song **Add audio** copies that one file into browser storage. User-provided lyric files and personal cover overrides are stored locally too. These local files are not shared; licensed Musixmatch lyrics are fetched only when requested and are not saved. The optional Cloudflare audio archive serves publicly only recordings you own or have explicit distribution rights to; do not publish copyrighted recordings without authorization.
 
 ## Run locally
 
@@ -19,6 +19,24 @@ Then visit <http://localhost:8000>.
 3. Open the Pages URL shown in the settings.
 
 The GitHub Pages build remains a static site. The app fetches public song metadata from Juice WRLD API; that catalog sync requires a working network connection and the API to be reachable from the browser.
+
+## Cloud audio archive
+
+The **Cloud audio** sidebar page can list and stream audio for every visitor and provides an admin-only upload flow for authorized recordings. It streams through the Pages Function and a private R2 bucket; the bucket itself should not be made public. Uploads require the admin secret and an explicit rights confirmation. Do not upload leaked or other copyrighted recordings unless you have the rights to distribute those specific files. GitHub Pages cannot run this endpoint; this feature requires a Cloudflare Pages deployment.
+
+To configure it in Cloudflare:
+
+1. Open the WRLD Archives project under **Workers & Pages** (connect the GitHub repository if needed). For this static app, use no framework, leave the build command blank, set the build output directory to `.`, and leave the root directory blank.
+2. Enable R2 for the account in the Cloudflare dashboard, then create a private bucket such as `wrld-archives-audio`.
+3. In **Settings → Bindings**, add an R2 bucket binding named `AUDIO_BUCKET` and select that bucket.
+4. In **Settings → Variables and Secrets**, add an encrypted secret named `WRLD_CLOUD_ADMIN_TOKEN` with a long random value (at least 24 characters). The upload dialog asks for this token only when you start an upload and keeps it in memory for that page session. Never commit it to GitHub or put it in frontend code.
+5. Redeploy the Pages project. Open its **Cloud audio** page to check that the endpoint responds, then upload only individual files cleared for public distribution.
+
+Cloudflare documents R2 setup and current pricing at [R2 Get started](https://developers.cloudflare.com/r2/get-started/) and [R2 pricing](https://developers.cloudflare.com/r2/pricing/). The free tier and rates can change; check the dashboard before storing large libraries. The app limits each file to 95 MB and supports HTTP range requests for streaming. The current Pages Function is `functions/api/cloud-audio.js`.
+
+## Ambient music-video backgrounds
+
+Ambient desktop can look up an embeddable official music video for a currently playing released song, then uses the video as a muted visual background while the app's selected audio remains the player audio. The cover art remains the fallback. Automatic lookup requires Cloudflare Pages and a server-side YouTube Data API key: add an encrypted secret named `YOUTUBE_DATA_API_KEY` to the Pages project, then redeploy. The browser never receives the key. The function requests embeddable video search results and only accepts matching results from its configured official-channel allowlist. See Google's [YouTube Data API search.list reference](https://developers.google.com/youtube/v3/docs/search/list). GitHub Pages continues to show the cover background.
 
 ## Automatic synced lyrics
 
@@ -42,7 +60,10 @@ The API uses Musixmatch's `matcher.subtitle.get` endpoint, which returns synced 
 - To link a mounted external drive, use **Link audio & covers from drive** over HTTPS or localhost in a browser with folder access (such as Chrome or Edge), then select the folder. The app scans subfolders, matches known filenames to catalog entries, and adds non-matching audio as local Drive file entries so those files remain visible and playable. Embedded cover art is extracted automatically. Each device and visitor must select their own folder.
 - The sidebar’s **Drive songs** view filters the catalog to entries linked from that browser’s selected drive.
 - **Shuffle Drive** builds a randomized queue of every drive-linked song and plays each once per pass.
-- **Ambient desktop** opens a responsive, clock-led night view with the current song cover slowly drifting as the background, an audio-reactive orbit, up-next queue, glass playback bar, and fullscreen control. Opening it attempts native fullscreen from the click; the control can retry or exit. Some embedded previews block browser fullscreen, so the player falls back to filling the app window and shows why. The orb, queue, and player colors follow the cover’s sampled palette. The orb displays the current line from a timed local `.lrc` file as the song plays. It reuses the current player and local cover art.
+- **Shuffle library** builds a randomized queue from every song that currently has playable audio: files linked from the selected drive, audio added in this browser, authorized song URLs, and public Cloud audio. Songs without an audio source stay in the catalog but cannot play until audio is added.
+- The **Grails** tab lets you keep a private, browser-local trophy list of favorite catalog entries.
+- With **Fresh shuffle** enabled in Ambient desktop, played and skipped songs leave the upcoming queue. Remaining playable songs reshuffle, then the cycle restarts after every available song has been heard.
+- **Ambient desktop** opens a responsive, clock-led night view with the current song cover slowly drifting as the background, an audio-reactive orbit, up-next queue, glass playback bar, and fullscreen control. For released songs, a configured Cloudflare Pages deployment can show a muted official music video behind the cover; otherwise the cover remains the background. Opening Ambient desktop attempts native fullscreen from the click; the control can retry or exit. Some browsers block fullscreen, so the player falls back to filling the app window and shows why. The orb, queue, and player colors follow the cover’s sampled palette. The orb displays the current line from a timed local `.lrc` file as the song plays. It reuses the current player and local cover art.
 - The Ambient desktop queue shows every queued song in a scrollable panel, brings the playing song into view when playback changes, and keeps the queue scroll independent from the visualizer.
 - Song rows reflow for tablet and phone screens, giving long titles room to wrap and placing playback actions beneath the title when the layout narrows.
 - The main player and Ambient desktop share a volume slider and remember its level in this browser. On mobile browsers that limit native volume control, local or same-origin audio can use Web Audio gain.
@@ -56,7 +77,7 @@ The API uses Musixmatch's `matcher.subtitle.get` endpoint, which returns synced 
 - Use **Share** on a playlist to send it through the device share sheet or download a playlist JSON file. Importing a shared playlist matches tracks by source ID, title, and version; the share file contains track metadata only and no audio.
 - Songs with lyric files automatically open the larger player when playback starts. Timed `.lrc` lines highlight and scroll with playback; **Auto-open lyrics when playback starts** can be turned off in that player. Plain `.txt` lyrics need timestamps to follow the audio. Automatic captions look up available lines from Musixmatch when the Cloudflare endpoint is configured; turn this on or off in the expanded player.
 - Add `.lrc` or `.txt` lyric files per song, import multiple files with **Import lyrics**, or place matching `.lrc` files beside audio in a linked folder. Imports match filenames to song titles and versions; existing lyric attachments are left untouched. Timed `.lrc` lines follow playback. Use **Sync lyrics to audio** in the expanded player to mark each plain-text line as it starts and save it as timed lyrics. Lyric files stay in this browser. Song rows link to Genius search results, but the app does not scrape or bundle copyrighted lyrics.
-- Song and album art extracted from the supplied audio files is optimized and bundled in `assets/covers/`, so the matching covers appear for every visitor. The current bundle contains 130 unique images extracted from 248 audio files. Other files had no embedded image or artwork that could not be processed. Use **Add cover** to set a personal override, or put separate image files named after a song or album in the linked folder. Personal overrides stay in this browser.
+- Song and album art extracted from the supplied audio files is optimized and bundled in `assets/covers/`; `cover-index.mjs` maps recognized catalog IDs, versions, filenames, and titles to that art. The app also includes official released-album/song artwork fallbacks so tracks without an exact match still display a cover. Use **Add cover** to set a personal override, or put separate image files named after a song or album in the linked folder. Personal overrides stay in this browser.
 - Embedded artwork is extracted automatically from audio tags when you add an audio file or link a folder. To rebuild the public cover bundle on macOS, run `node scripts/build-covers.mjs /path/to/audio-folder`. MP3, M4A, MP4, FLAC, WAV, AAC, OGG, Opus, AIFF, and ALAC files are scanned. HTML download pages such as `song.mp3.html` are ignored because they are not audio files. The rebuild updates `cover-index.mjs` and `assets/covers/`.
 - Use **Export JSON** to back up the catalog metadata. This export does not include local audio, cover, or lyric files.
 - The app links to streaming-service searches for released songs; those links do not guarantee availability of a specific recording.
@@ -68,7 +89,7 @@ Requires Node.js 20 or newer. Run the same checks used by GitHub Actions:
 
 ```sh
 node scripts/validate.mjs
-node --test catalog.test.mjs lyrics-api.test.mjs library-tools.test.mjs
+node --test catalog.test.mjs lyrics-api.test.mjs library-tools.test.mjs cloud-audio.test.mjs music-video-api.test.mjs
 ```
 
 ## Local desktop assistant

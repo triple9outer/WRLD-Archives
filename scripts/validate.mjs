@@ -19,7 +19,7 @@ assert.match(html, /<script type="module">[\s\S]*?import \{ filterCatalogTracks,
 assert.match(worker, /'\.\/catalog\.mjs'/, 'service worker must cache the catalog module');
 assert.match(worker, /'\.\/cover-index\.mjs'/, 'service worker must cache the bundled cover map');
 assert.match(worker, /'\.\/library-tools\.mjs'/, 'service worker must cache the local library tools module');
-assert.match(worker, /wrld-archives-shell-v31/, 'service worker cache must refresh for library tools and player updates');
+assert.match(worker, /wrld-archives-shell-v32/, 'service worker cache must refresh for library tools and player updates');
 assert.match(html, /id="deviceFilesPicker"[^>]*multiple hidden/, 'iOS must have a multi-file device picker');
 assert.ok(worker.includes('/api\\/(lyrics|cloud-audio|music-video)'), 'service worker must never cache API responses');
 assert.match(html, /import coverIndex from '\.\/cover-index\.mjs'/, 'app must import the bundled cover map');
@@ -56,6 +56,10 @@ assert.match(html, /id="grailsTab"/, 'catalog must expose the local Grails list'
 assert.match(html, /id="cloudStorageDialog"/, 'catalog must expose public audio storage management');
 assert.equal((html.match(/id="cloudUploadDrive"/g) || []).length, 1, 'cloud publishing must have one uniquely bound button');
 assert.match(moduleScript, /async function loadCloudAudioCatalog\(forceFresh=false\)/, 'cloud list must support a fresh read on open or refresh');
+assert.match(moduleScript, /if\(!cloudAudioReady\)await loadCloudAudioCatalog\(\)/, 'song playback must wait for cloud availability on a new device');
+assert.match(moduleScript, /function playPublicCloudItem\(/, 'every listed cloud file must have a direct playback path');
+assert.match(moduleScript, /const cloudTrack=\{id,title:item\.title/, 'unmatched cloud files must still play without a local catalog entry');
+assert.match(moduleScript, /data-cloud-play[\s\S]{0,180}playPublicCloudItem/, 'cloud audio rows must launch direct playback');
 assert.match(moduleScript, /if\(forceFresh\)endpoint\.searchParams\.set\('_'/, 'manual cloud refresh must bypass stale list caches');
 assert.match(html, /id="cloudAdminTokenInput" type="password"/, 'cloud audio publishing must use a visible password field');
 assert.match(html, /id="cloudRightsConfirmed" type="checkbox"/, 'cloud audio publishing must require explicit rights confirmation');

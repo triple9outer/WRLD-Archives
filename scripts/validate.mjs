@@ -19,7 +19,8 @@ assert.match(html, /<script type="module">[\s\S]*?import \{ filterCatalogTracks,
 assert.match(worker, /'\.\/catalog\.mjs'/, 'service worker must cache the catalog module');
 assert.match(worker, /'\.\/cover-index\.mjs'/, 'service worker must cache the bundled cover map');
 assert.match(worker, /'\.\/library-tools\.mjs'/, 'service worker must cache the local library tools module');
-assert.match(worker, /wrld-archives-shell-v30/, 'service worker cache must refresh for library tools and player updates');
+assert.match(worker, /wrld-archives-shell-v31/, 'service worker cache must refresh for library tools and player updates');
+assert.match(html, /id="deviceFilesPicker"[^>]*multiple hidden/, 'iOS must have a multi-file device picker');
 assert.ok(worker.includes('/api\\/(lyrics|cloud-audio|music-video)'), 'service worker must never cache API responses');
 assert.match(html, /import coverIndex from '\.\/cover-index\.mjs'/, 'app must import the bundled cover map');
 assert.match(html, /staticCoverPathForTrack\(track\)\|\|staticCoverPathForAlbum/, 'covers must have a public bundled fallback');
@@ -30,6 +31,8 @@ assert.ok(catalog.includes('export function mergeApiCatalog'));
 
 const moduleScript = html.match(/<script type="module">([\s\S]*?)<\/script>/)?.[1];
 assert.ok(moduleScript, 'main application module must exist');
+assert.match(moduleScript, /async function attachDeviceFiles\(files\)/, 'mobile file selection must store and match selected audio and artwork');
+assert.match(moduleScript, /deviceFilesPicker\.click\(\)/, 'browsers without directory access must use the device picker');
 const bundledCovers = readdirSync(join(root, 'assets', 'covers')).filter(name => name.endsWith('.jpg'));
 assert.ok(bundledCovers.length > 0, 'the repository must include public cover images');
 const indexedCoverPaths = [...new Set(Object.values(coverIndex).flatMap(mapping => Object.values(mapping)))];

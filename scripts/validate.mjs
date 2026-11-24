@@ -19,7 +19,7 @@ assert.match(html, /<script type="module">[\s\S]*?import \{ filterCatalogTracks,
 assert.match(worker, /'\.\/catalog\.mjs'/, 'service worker must cache the catalog module');
 assert.match(worker, /'\.\/cover-index\.mjs'/, 'service worker must cache the bundled cover map');
 assert.match(worker, /'\.\/library-tools\.mjs'/, 'service worker must cache the local library tools module');
-assert.match(worker, /wrld-archives-shell-v37/, 'service worker cache must refresh for Ambient desktop themes');
+assert.match(worker, /wrld-archives-shell-v38/, 'service worker cache must refresh for Ambient desktop themes');
 assert.match(html, /id="deviceFilesPicker"[^>]*multiple hidden/, 'iOS must have a multi-file device picker');
 assert.ok(worker.includes('/api\\/(lyrics|cloud-audio|music-video)'), 'service worker must never cache API responses');
 assert.match(html, /import coverIndex from '\.\/cover-index\.mjs'/, 'app must import the bundled cover map');
@@ -113,6 +113,11 @@ assert.match(moduleScript, /function setDesktopBackgroundMode\(/, 'Ambient deskt
 assert.match(moduleScript, /storeAudio\('ambient-background-v1'/, 'custom Ambient images must be saved locally in IndexedDB');
 assert.match(moduleScript, /localStorage\.setItem\('wrld-ambient-background-v1'/, 'Ambient background adjustments must persist');
 assert.match(moduleScript, /wrld-ambient-video-background-v1/, 'music-video background preference must persist');
+assert.match(html, /id="desktopCustomBackgroundVideo" muted loop playsinline/, 'Ambient desktop must play a muted looping local background video');
+assert.match(html, /id="desktopBackgroundVideoFile" type="file" accept="video\/\*/, 'Ambient desktop must accept local video files');
+assert.match(moduleScript, /storeAudio\('ambient-video-background-v1'/, 'custom Ambient videos must be saved locally in IndexedDB');
+assert.match(moduleScript, /file\.size>100\*1024\*1024/, 'custom Ambient videos must have a local storage size limit');
+assert.match(moduleScript, /function setDesktopCustomBackgroundVideo\(/, 'Ambient desktop must load and validate selected video backgrounds');
 assert.match(moduleScript, /document\.querySelector\('#desktopStage'\)\.addEventListener\('close'/, 'Ambient dialog listener must not read its later-initialized binding');
 assert.match(moduleScript, /\.desktopSearchResult:not\(:disabled\)/, 'Ambient search must let Enter play the first available result');
 assert.match(moduleScript, /if\(!document\.querySelector\('#desktopSearchPanel'\)\.hidden\)renderDesktopSongSearchResults\(\)/, 'Ambient results must refresh when public cloud audio loads');

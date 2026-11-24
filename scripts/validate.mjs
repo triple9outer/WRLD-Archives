@@ -19,7 +19,7 @@ assert.match(html, /<script type="module">[\s\S]*?import \{ filterCatalogTracks,
 assert.match(worker, /'\.\/catalog\.mjs'/, 'service worker must cache the catalog module');
 assert.match(worker, /'\.\/cover-index\.mjs'/, 'service worker must cache the bundled cover map');
 assert.match(worker, /'\.\/library-tools\.mjs'/, 'service worker must cache the local library tools module');
-assert.match(worker, /wrld-archives-shell-v36/, 'service worker cache must refresh for Ambient desktop themes');
+assert.match(worker, /wrld-archives-shell-v37/, 'service worker cache must refresh for Ambient desktop themes');
 assert.match(html, /id="deviceFilesPicker"[^>]*multiple hidden/, 'iOS must have a multi-file device picker');
 assert.ok(worker.includes('/api\\/(lyrics|cloud-audio|music-video)'), 'service worker must never cache API responses');
 assert.match(html, /import coverIndex from '\.\/cover-index\.mjs'/, 'app must import the bundled cover map');
@@ -106,6 +106,13 @@ assert.match(moduleScript, /if\(activeAmbientThemeId!=='cover-reactive'\)return/
 assert.match(moduleScript, /function desktopSearchText\(/, 'Ambient search must match song titles and related metadata');
 assert.match(moduleScript, /function renderDesktopSongSearchResults\(/, 'Ambient search must render matching songs');
 assert.match(moduleScript, /function setDesktopSongSearchOpen\(/, 'Ambient search must open and close from its control');
+assert.match(html, /id="desktopBackgroundMode"/, 'Ambient desktop must offer editable background sources');
+assert.match(html, /id="desktopBackgroundFile" type="file" accept="image\/\*"/, 'Ambient desktop must accept a local image background');
+assert.match(html, /id="desktopMusicVideoBackground" type="checkbox"/, 'Ambient desktop must let users control released-song video backgrounds');
+assert.match(moduleScript, /function setDesktopBackgroundMode\(/, 'Ambient desktop background source changes must be applied');
+assert.match(moduleScript, /storeAudio\('ambient-background-v1'/, 'custom Ambient images must be saved locally in IndexedDB');
+assert.match(moduleScript, /localStorage\.setItem\('wrld-ambient-background-v1'/, 'Ambient background adjustments must persist');
+assert.match(moduleScript, /wrld-ambient-video-background-v1/, 'music-video background preference must persist');
 assert.match(moduleScript, /document\.querySelector\('#desktopStage'\)\.addEventListener\('close'/, 'Ambient dialog listener must not read its later-initialized binding');
 assert.match(moduleScript, /\.desktopSearchResult:not\(:disabled\)/, 'Ambient search must let Enter play the first available result');
 assert.match(moduleScript, /if\(!document\.querySelector\('#desktopSearchPanel'\)\.hidden\)renderDesktopSongSearchResults\(\)/, 'Ambient results must refresh when public cloud audio loads');

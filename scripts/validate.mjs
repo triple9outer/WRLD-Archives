@@ -19,7 +19,7 @@ assert.match(html, /<script type="module">[\s\S]*?import \{ filterCatalogTracks,
 assert.match(worker, /'\.\/catalog\.mjs'/, 'service worker must cache the catalog module');
 assert.match(worker, /'\.\/cover-index\.mjs'/, 'service worker must cache the bundled cover map');
 assert.match(worker, /'\.\/library-tools\.mjs'/, 'service worker must cache the local library tools module');
-assert.match(worker, /wrld-archives-shell-v33/, 'service worker cache must refresh for Ambient desktop song search');
+assert.match(worker, /wrld-archives-shell-v34/, 'service worker cache must refresh for Ambient desktop song search');
 assert.match(html, /id="deviceFilesPicker"[^>]*multiple hidden/, 'iOS must have a multi-file device picker');
 assert.ok(worker.includes('/api\\/(lyrics|cloud-audio|music-video)'), 'service worker must never cache API responses');
 assert.match(html, /import coverIndex from '\.\/cover-index\.mjs'/, 'app must import the bundled cover map');
@@ -100,6 +100,7 @@ assert.match(html, /id="desktopSongSearch" type="search"/, 'Ambient desktop song
 assert.match(moduleScript, /function desktopSearchText\(/, 'Ambient search must match song titles and related metadata');
 assert.match(moduleScript, /function renderDesktopSongSearchResults\(/, 'Ambient search must render matching songs');
 assert.match(moduleScript, /function setDesktopSongSearchOpen\(/, 'Ambient search must open and close from its control');
+assert.match(moduleScript, /document\.querySelector\('#desktopStage'\)\.addEventListener\('close'/, 'Ambient dialog listener must not read its later-initialized binding');
 assert.match(moduleScript, /\.desktopSearchResult:not\(:disabled\)/, 'Ambient search must let Enter play the first available result');
 assert.match(moduleScript, /if\(!document\.querySelector\('#desktopSearchPanel'\)\.hidden\)renderDesktopSongSearchResults\(\)/, 'Ambient results must refresh when public cloud audio loads');
 assert.doesNotMatch(moduleScript, /desktopQueueRows[\s\S]{0,400}\.slice\(0,7\)/, 'ambient queue must show every queued song');

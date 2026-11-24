@@ -19,7 +19,7 @@ assert.match(html, /<script type="module">[\s\S]*?import \{ filterCatalogTracks,
 assert.match(worker, /'\.\/catalog\.mjs'/, 'service worker must cache the catalog module');
 assert.match(worker, /'\.\/cover-index\.mjs'/, 'service worker must cache the bundled cover map');
 assert.match(worker, /'\.\/library-tools\.mjs'/, 'service worker must cache the local library tools module');
-assert.match(worker, /wrld-archives-shell-v34/, 'service worker cache must refresh for Ambient desktop song search');
+assert.match(worker, /wrld-archives-shell-v35/, 'service worker cache must refresh for Ambient desktop song search');
 assert.match(html, /id="deviceFilesPicker"[^>]*multiple hidden/, 'iOS must have a multi-file device picker');
 assert.ok(worker.includes('/api\\/(lyrics|cloud-audio|music-video)'), 'service worker must never cache API responses');
 assert.match(html, /import coverIndex from '\.\/cover-index\.mjs'/, 'app must import the bundled cover map');
@@ -147,6 +147,9 @@ assert.match(html, /id="availabilityFilter"/, 'catalog must filter tracks by loc
 assert.match(html, /id="resetFilters"/, 'catalog must let users clear all active filters');
 assert.match(html, /value="recent">Recently played/, 'track sorting must include recent listening history');
 assert.match(moduleScript, /function addToQueueNext\(/, 'song rows must support play-next queue ordering');
+assert.match(moduleScript, /function nextPlayableLibraryTrack\(/, 'skip buttons must fall back to playable library songs when the explicit queue is empty');
+assert.match(moduleScript, /function playNext\(\)[\s\S]{0,650}nextPlayableLibraryTrack\(\)/, 'Next must advance through playable library tracks after the queue');
+assert.match(moduleScript, /function playPrevious\(\)[\s\S]{0,650}tracks\.filter\(canPlayTrack\)/, 'Previous must fall back to the playable library when history is empty');
 assert.match(moduleScript, /function syncDesktopLyrics\(/, 'ambient captions must follow timed lyric playback');
 assert.match(html, /id="findTimedLyrics"/, 'player must expose the licensed synced-lyrics lookup');
 assert.match(moduleScript, /async function fetchProviderLyrics\(/, 'player must fetch timed lyrics from its same-origin backend');

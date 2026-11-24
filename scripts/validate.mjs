@@ -19,7 +19,7 @@ assert.match(html, /<script type="module">[\s\S]*?import \{ filterCatalogTracks,
 assert.match(worker, /'\.\/catalog\.mjs'/, 'service worker must cache the catalog module');
 assert.match(worker, /'\.\/cover-index\.mjs'/, 'service worker must cache the bundled cover map');
 assert.match(worker, /'\.\/library-tools\.mjs'/, 'service worker must cache the local library tools module');
-assert.match(worker, /wrld-archives-shell-v35/, 'service worker cache must refresh for Ambient desktop song search');
+assert.match(worker, /wrld-archives-shell-v36/, 'service worker cache must refresh for Ambient desktop themes');
 assert.match(html, /id="deviceFilesPicker"[^>]*multiple hidden/, 'iOS must have a multi-file device picker');
 assert.ok(worker.includes('/api\\/(lyrics|cloud-audio|music-video)'), 'service worker must never cache API responses');
 assert.match(html, /import coverIndex from '\.\/cover-index\.mjs'/, 'app must import the bundled cover map');
@@ -97,6 +97,12 @@ assert.match(moduleScript, /function renderDesktopQueue\(/, 'ambient desktop mod
 assert.match(moduleScript, /function renderDesktopQueue\(scrollToPlaying=false\)/, 'ambient queue must support focused scrolling to the current song');
 assert.match(html, /id="desktopSearchToggle"[^>]*aria-controls="desktopSearchPanel"/, 'Ambient desktop must expose a song search control');
 assert.match(html, /id="desktopSongSearch" type="search"/, 'Ambient desktop song search must include a searchable input');
+assert.match(html, /id="desktopThemeToggle"[^>]*aria-controls="desktopThemePanel"/, 'Ambient desktop must expose its theme picker');
+assert.match(html, /id="desktopThemeOptions"/, 'Ambient theme picker must expose a preset list');
+assert.match(moduleScript, /const desktopThemePresets=\[([\s\S]*?)\];/, 'Ambient desktop must define theme presets');
+assert.match(moduleScript, /localStorage\.setItem\('wrld-ambient-theme-v1'/, 'Ambient theme selection must persist');
+assert.match(moduleScript, /function setAmbientDesktopTheme\(/, 'Ambient themes must update the desktop palette');
+assert.match(moduleScript, /if\(activeAmbientThemeId!=='cover-reactive'\)return/, 'manual Ambient themes must stay selected when song covers change');
 assert.match(moduleScript, /function desktopSearchText\(/, 'Ambient search must match song titles and related metadata');
 assert.match(moduleScript, /function renderDesktopSongSearchResults\(/, 'Ambient search must render matching songs');
 assert.match(moduleScript, /function setDesktopSongSearchOpen\(/, 'Ambient search must open and close from its control');

@@ -19,7 +19,7 @@ assert.match(html, /<script type="module">[\s\S]*?import \{ filterCatalogTracks,
 assert.match(worker, /'\.\/catalog\.mjs'/, 'service worker must cache the catalog module');
 assert.match(worker, /'\.\/cover-index\.mjs'/, 'service worker must cache the bundled cover map');
 assert.match(worker, /'\.\/library-tools\.mjs'/, 'service worker must cache the local library tools module');
-assert.match(worker, /wrld-archives-shell-v39/, 'service worker cache must refresh for Ambient desktop themes');
+assert.match(worker, /wrld-archives-shell-v40/, 'service worker cache must refresh for Ambient desktop themes');
 assert.match(html, /id="deviceFilesPicker"[^>]*multiple hidden/, 'iOS must have a multi-file device picker');
 assert.ok(worker.includes('/api\\/(lyrics|cloud-audio|music-video)'), 'service worker must never cache API responses');
 assert.match(html, /import coverIndex from '\.\/cover-index\.mjs'/, 'app must import the bundled cover map');
@@ -117,6 +117,16 @@ assert.match(html, /id="desktopCustomBackgroundVideo" muted loop playsinline/, '
 assert.match(html, /id="desktopBackgroundVideoFile" type="file" accept="video\/\*/, 'Ambient desktop must accept local video files');
 assert.match(moduleScript, /storeAudio\('ambient-video-background-v1'/, 'custom Ambient videos must be saved locally in IndexedDB');
 assert.match(moduleScript, /file\.size>1024\*1024\*1024/, 'custom Ambient videos must have a 1 GB local storage size limit');
+assert.match(html, /id="mixLabDialog"/, 'the app must expose its smart Mix Lab');
+assert.match(html, /id="sideMixLab"/, 'Mix Lab must be reachable from the sidebar');
+assert.match(moduleScript, /function mixLabTracks\(/, 'smart mixes must use the user’s playable catalog and listening data');
+assert.match(moduleScript, /function applySmartMix\(/, 'smart mixes must support queueing and playback');
+assert.match(html, /id="sleepTimer"/, 'the player must include a sleep timer');
+assert.match(moduleScript, /function setSleepTimer\(/, 'the sleep timer must support timed and end-of-song stops');
+assert.match(html, /id="shortcutsDialog"/, 'keyboard shortcuts must have an in-app guide');
+assert.match(moduleScript, /event\.code==='Space'/, 'the player must support keyboard playback controls');
+assert.match(html, /id="playerCollapseToggle"/, 'the player must expose a collapse toggle on desktop, tablet, and mobile');
+assert.match(moduleScript, /function setPlayerCollapsed\(/, 'player collapse state must be applied and saved');
 assert.match(moduleScript, /function setDesktopCustomBackgroundVideo\(/, 'Ambient desktop must load and validate selected video backgrounds');
 assert.match(moduleScript, /document\.querySelector\('#desktopStage'\)\.addEventListener\('close'/, 'Ambient dialog listener must not read its later-initialized binding');
 assert.match(moduleScript, /\.desktopSearchResult:not\(:disabled\)/, 'Ambient search must let Enter play the first available result');

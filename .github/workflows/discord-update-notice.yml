@@ -1,0 +1,40 @@
+name: Discord update notice
+
+on:
+  push:
+    branches:
+      - main
+  workflow_dispatch:
+
+permissions: {}
+
+jobs:
+  notify:
+    if: github.event.deleted != true
+    runs-on: ubuntu-latest
+    timeout-minutes: 1
+    permissions: {}
+    steps:
+      - name: Send commit notice
+        shell: bash
+        env:
+          DISCORD_WEBHOOK_URL: ${{ secrets.DISCORD_WEBHOOK_URL }}
+          REPOSITORY: ${{ github.repository }}
+          COMMIT_SHA: ${{ github.sha }}
+          COMMIT_SUMMARY: ${{ github.event.head_commit.message }}
+          RUN_URL: ${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}
+        run: |
+          if [[ -z "$DISCORD_WEBHOOK_URL" ]]; then
+            echo "::notice::DISCORD_WEBHOOK_URL is not configured; skipping the Discord notice."
+            exit 0
+          fi
+
+          summary="${COMMIT_SUMMARY:-Manual update}"
+          summary="${summary//$'\r'/ }"
+          summary="${summary//$'\n'/ }"
+          summary="${summary:0:500}"
+          payload="$(jq -n --arg repo "$REPOSITORY" --arg sha "${COMMIT_SHA:0:7}" --arg summary "$summary" --arg run "$RUN_URL" '{content: ("WRLD Archives update `"+$sha+"`\n"+$summary+"\n"+$run), allowed_mentions: {parse: []}}')"
+          curl --fail-with-body --silent --show-error --max-time 15 \
+            -H "Content-Type: application/json" \
+            --data "$payload" \
+            "$DISCORD_WEBHOOK_URL" >/dev/null

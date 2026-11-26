@@ -19,7 +19,7 @@ assert.match(html, /<script type="module">[\s\S]*?import \{ filterCatalogTracks,
 assert.match(worker, /'\.\/catalog\.mjs'/, 'service worker must cache the catalog module');
 assert.match(worker, /'\.\/cover-index\.mjs'/, 'service worker must cache the bundled cover map');
 assert.match(worker, /'\.\/library-tools\.mjs'/, 'service worker must cache the local library tools module');
-assert.match(worker, /wrld-archives-shell-v42/, 'service worker cache must refresh for phone imports, archive stats, and tier lists');
+assert.match(worker, /wrld-archives-shell-v43/, 'service worker cache must refresh for phone imports, archive stats, tier lists, and era filters');
 assert.match(html, /id="deviceFilesPicker"[^>]*multiple hidden/, 'iOS must have a multi-file device picker');
 assert.match(html, /id="audioFilesPicker" accept="audio\/\*[^"]*" multiple hidden/, 'phone users must have a dedicated multi-audio picker');
 assert.match(html, /id="deviceFolderPicker"[^>]*multiple webkitdirectory directory hidden/, 'folder selection must use the browser directory upload input when supported');
@@ -31,6 +31,7 @@ assert.match(html, /id="unreleased"[^>]*>/, 'the unreleased count target must ex
 assert.match(html, /id="favoriteCount"[^>]*>/, 'the favorite count target must exist before the first render');
 assert.match(html, /id="tiersTab"/, 'the archive must expose the local tier list');
 assert.match(html, /id="tierShare"/, 'the tier list must be shareable without an account');
+assert.match(html, /id="eraFilter"/, 'the catalog must expose the recording-era filter');
 assert.ok(worker.includes('/api\\/(lyrics|cloud-audio|music-video)'), 'service worker must never cache API responses');
 assert.match(html, /import coverIndex from '\.\/cover-index\.mjs'/, 'app must import the bundled cover map');
 assert.match(html, /staticCoverPathForTrack\(track\)\|\|staticCoverPathForAlbum/, 'covers must have a public bundled fallback');
@@ -44,6 +45,7 @@ assert.ok(moduleScript, 'main application module must exist');
 assert.match(moduleScript, /async function attachDeviceFiles\(files,onProgress=/, 'mobile file selection must store and match selected audio and artwork');
 assert.match(moduleScript, /jw-tier-ratings-v1/, 'tier assignments must persist on this device');
 assert.match(moduleScript, /function tierListText\(/, 'tier list export must group songs in ranked order');
+assert.match(moduleScript, /const selectedEra=document\.querySelector\('#eraFilter'\)\.value;if\(selectedEra!=='all'\)/, 'recording-era filtering must apply to current catalog rows');
 assert.match(moduleScript, /deviceFolderPicker\.click\(\)/, 'browsers without native directory access must offer file-input folder selection');
 assert.match(moduleScript, /function openDeviceFolderPicker\(/, 'folder import must feature-detect browser directory support');
 assert.match(moduleScript, /async function importSelectedDeviceFiles\(/, 'mobile file and folder imports must report progress and handle errors');

@@ -53,6 +53,23 @@ This endpoint is a Cloudflare Pages Function at `functions/api/lyrics.js`. GitHu
 
 The API uses Musixmatch's `matcher.subtitle.get` endpoint, which returns synced subtitle data for a title, artist, and optional duration ([official endpoint](https://www.postman.com/musixmatch-dev/musixmatch-apis/request/pfer6zd/matcher-subtitle-get)). Unreleased tracks may not be in the authorized catalog, so they can still have no automatic captions. An API key and Cloudflare deployment are required; until then the app continues to work with user-selected local lyric files on GitHub Pages.
 
+## Account sign-in
+
+The sidebar’s **Account** panel supports Discord and Google OAuth, email sign-in links, and phone one-time codes through Supabase Auth. The sign-in UI is optional until configured. Accounts currently identify a signed-in user only; favorites, playlists, listening history, and local audio are not synced to a cloud profile, and sign-in does not change access to Cloud audio.
+
+To enable sign-in:
+
+1. Create a Supabase project and set its **Site URL** to the production app address. Add the production address, the Cloudflare Pages address if used, and `http://localhost:4178` to the allowed redirect URLs. Supabase’s URL and redirect setup is documented in its [redirect URLs guide](https://supabase.com/docs/guides/auth/redirect-urls).
+2. In Supabase Auth providers, enable email, Google, Discord, and phone as needed. Google and Discord each require an OAuth application; use the callback URL Supabase shows, then store each provider’s client ID and secret in the Supabase dashboard. Never put an OAuth client secret or Supabase secret/service-role key in this repository or in chat. See Supabase’s [Google](https://supabase.com/docs/guides/auth/social-sign-in/auth-google) and [Discord](https://supabase.com/docs/guides/auth/social-sign-in/auth-discord) guides.
+3. For phone sign-in, configure an SMS provider in Supabase. SMS can incur provider fees; set rate limits and CAPTCHA before opening sign-up publicly. See the [phone sign-in guide](https://supabase.com/docs/guides/auth/phone-login).
+4. Put the Supabase project URL and **publishable** key in `auth-config.js`, then redeploy. A publishable key is meant for browser use; keep database tables protected with row-level security before adding cloud-synced user data.
+
+The app uses Supabase JS v2.119.2 from jsDelivr and PKCE browser sessions. This login pass does not create a cloud profile database or copy any local files. Until `auth-config.js` is filled in and provider settings are saved in Supabase, the app shows a setup notice instead of claiming sign-in works.
+
+## Discord update notices
+
+`.github/workflows/discord-update-notice.yml` can post a short notice to a Discord channel after each push to `main`. It skips safely when the repository secret is missing. To enable it, create a new Discord channel webhook and add its URL in GitHub under **Settings → Secrets and variables → Actions → New repository secret**, named `DISCORD_WEBHOOK_URL`. Keep the URL out of source files and chat. If a webhook URL was shared publicly, delete it and make a replacement before adding the new one. The notice contains the commit summary and a link to its Actions run; mentions are disabled.
+
 ## Data and audio
 
 - Song entries, favorites, and catalog metadata are stored in this browser’s `localStorage`.
@@ -66,8 +83,8 @@ The API uses Musixmatch's `matcher.subtitle.get` endpoint, which returns synced 
 - **Tier list** lets you rank songs S, A, B, C, D, or F, filters the catalog to ranked songs, and shares a text list through the device share sheet or a download. Rankings stay in this browser.
 - **Filters & tools** now includes a recording-era selector populated from the catalog metadata, alongside availability, leak status, favorites, and listening-history sorting.
 - With **Fresh shuffle** enabled in Ambient desktop, played and skipped songs leave the upcoming queue. Remaining playable songs reshuffle, then the cycle restarts after every available song has been heard.
-- **Ambient desktop** opens a responsive, clock-led night view with the current song cover slowly drifting as the background, an audio-reactive orbit, up-next queue, glass playback bar, and fullscreen control. For released songs, a configured Cloudflare Pages deployment can show a muted official music video behind the cover; otherwise the cover remains the background. Opening Ambient desktop attempts native fullscreen from the click; the control can retry or exit. Some browsers block fullscreen, so the player falls back to filling the app window and shows why. The orb, queue, and player colors follow the cover’s sampled palette. The orb displays the current line from a timed local `.lrc` file as the song plays. It reuses the current player and local cover art.
-- The Ambient desktop queue shows every queued song in a scrollable panel, brings the playing song into view when playback changes, and keeps the queue scroll independent from the visualizer.
+- **Ambient desktop** opens a responsive, clock-led night view with the current song cover slowly drifting as the background, an audio-reactive orbit, up-next queue, glass playback bar, and fullscreen control. On phones and tablets the orb and controls scale down, and the queue collapses behind a toggle. For released songs, a configured Cloudflare Pages deployment can show a muted official music video behind the cover; otherwise the cover remains the background. Opening Ambient desktop attempts native fullscreen from the click; the control can retry or exit. Some browsers block fullscreen, so the player fills the app viewport and labels the state **Windowed**. The orb, queue, and player colors follow the cover’s sampled palette. The orb displays the current line from a timed local `.lrc` file as the song plays. It reuses the current player and local cover art.
+- The Ambient desktop queue shows every queued song in a scrollable panel, brings the playing song into view when playback changes, and keeps the queue scroll independent from the visualizer. On narrow screens, use **Queue** to show or hide the upcoming songs.
 - Song rows reflow for tablet and phone screens, giving long titles room to wrap and placing playback actions beneath the title when the layout narrows.
 - The main player and Ambient desktop share a volume slider and remember its level in this browser. On mobile browsers that limit native volume control, local or same-origin audio can use Web Audio gain.
 - **Surprise me** picks a random song from the current search, album, status, and favorite filters, highlights it in the archive, and offers playback when a local file or authorized link is available.
@@ -106,7 +123,7 @@ The catalog records Juice WRLD API source IDs and categories, preserves local ID
 1. Catalog foundation: source-aware normalization, regression tests, safe local data migrations, and responsive full-catalog search.
 2. Player foundation: persistent queue, playlists, playback history, and accessible controls.
 3. Visualizers that analyze authorized audio selected by the user.
-4. Backend architecture for accounts, authorized cloud files, permissions, backups, and moderation.
+4. Cloud profiles, authorized cloud-file permissions, backups, and moderation. Sign-in alone does not sync or protect user data.
 5. Server-side WRLD AI endpoints with usage limits and cost controls.
 6. Optional Tauri desktop companion and Discord Rich Presence.
 

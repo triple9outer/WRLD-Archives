@@ -76,6 +76,8 @@ assert.doesNotMatch(catalogApi, /audio_url|song\.path|preview_url/i, 'the catalo
 
 const moduleScript = html.match(/<script type="module">([\s\S]*?)<\/script>/)?.[1];
 assert.ok(moduleScript, 'main application module must exist');
+assert.match(moduleScript, /discordMobilePresenceUnsupported/, 'phone browsers must not try to use the desktop Discord bridge');
+assert.match(moduleScript, /Phone playback cannot update Discord activity in this web app/, 'phone users must see why Rich Presence is unavailable here');
 assert.match(moduleScript, /import \{ initAccountAuth \} from '\.\/account-auth\.mjs'/, 'the app must initialize optional account sign-in');
 assert.match(moduleScript, /initAccountAuth\(\)/, 'account sign-in handlers must be initialized');
 assert.match(moduleScript, /async function fetchSongCatalog\(/, 'the app must use its Cloudflare catalog API when available');

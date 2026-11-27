@@ -1,4 +1,4 @@
-const CACHE = 'wrld-archives-shell-v54';
+const CACHE = 'wrld-archives-shell-v55';
 const SHELL = ['./', './index.html', './catalog.mjs', './library-tools.mjs', './cover-index.mjs', './official-album-covers.mjs', './auth-config.js', './account-auth.mjs', './cloud-library-sync.mjs', './manifest.webmanifest', './wrld-icon.svg', './wrld-icon-192.png', './wrld-icon-512.png', './apple-touch-icon.png'];
 self.addEventListener('install', event => {
   event.waitUntil(caches.open(CACHE).then(cache => cache.addAll(SHELL)));

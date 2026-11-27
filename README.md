@@ -55,16 +55,17 @@ The API uses Musixmatch's `matcher.subtitle.get` endpoint, which returns synced 
 
 ## Account sign-in
 
-The sidebar’s **Account** panel supports Discord and Google OAuth, email sign-in links, and phone one-time codes through Supabase Auth. The sign-in UI is optional until configured. Accounts currently identify a signed-in user only; favorites, playlists, listening history, and local audio are not synced to a cloud profile, and sign-in does not change access to Cloud audio.
+The sidebar’s **Account** panel supports Discord and Google OAuth, email sign-in links, and phone one-time codes through Supabase Auth. When signed in, favorites and playlist definitions sync to the user’s Supabase account. Song files, lyrics, listening history, the queue, and other local library data stay on that device. Row-level security limits each account to its own favorites and playlists.
 
 To enable sign-in:
 
 1. Create a Supabase project and set its **Site URL** to the production app address. Add the production address, the Cloudflare Pages address if used, and `http://localhost:4178` to the allowed redirect URLs. Supabase’s URL and redirect setup is documented in its [redirect URLs guide](https://supabase.com/docs/guides/auth/redirect-urls).
 2. In Supabase Auth providers, enable email, Google, Discord, and phone as needed. Google and Discord each require an OAuth application; use the callback URL Supabase shows, then store each provider’s client ID and secret in the Supabase dashboard. Never put an OAuth client secret or Supabase secret/service-role key in this repository or in chat. See Supabase’s [Google](https://supabase.com/docs/guides/auth/social-sign-in/auth-google) and [Discord](https://supabase.com/docs/guides/auth/social-sign-in/auth-discord) guides.
 3. For phone sign-in, configure an SMS provider in Supabase. SMS can incur provider fees; set rate limits and CAPTCHA before opening sign-up publicly. See the [phone sign-in guide](https://supabase.com/docs/guides/auth/phone-login).
-4. Put the Supabase project URL and **publishable** key in `auth-config.js`, then redeploy. A publishable key is meant for browser use; keep database tables protected with row-level security before adding cloud-synced user data.
+4. `auth-config.js` contains the project URL and **publishable** key. The publishable key is intended for browser use; never place a Supabase secret key or OAuth client secret in the app.
+5. In the Supabase SQL Editor, run [`supabase/cloud-library.sql`](supabase/cloud-library.sql) once to create the private favorites and playlists tables. It enables row-level security and grants table access only to authenticated users who own each row. The first signed-in account imports this browser’s existing favorites and playlists; later accounts keep separate cloud copies.
 
-The app uses Supabase JS v2.119.2 from jsDelivr and PKCE browser sessions. This login pass does not create a cloud profile database or copy any local files. Until `auth-config.js` is filled in and provider settings are saved in Supabase, the app shows a setup notice instead of claiming sign-in works.
+The app uses Supabase JS v2.119.2 from jsDelivr and PKCE browser sessions. If the SQL has not been run yet, favorites and playlists remain local and the Account panel explains how to finish setup.
 
 ## Discord update notices
 
@@ -72,7 +73,7 @@ The app uses Supabase JS v2.119.2 from jsDelivr and PKCE browser sessions. This 
 
 ## Data and audio
 
-- Song entries, favorites, and catalog metadata are stored in this browser’s `localStorage`.
+- Song entries and catalog metadata are stored in this browser’s `localStorage`. Favorites are cached locally and sync through Supabase when signed in; playlist definitions sync the same way. Audio files, queue, and listening history remain device-local.
 - Drive-linked audio remains on the selected drive; IndexedDB stores file handles, not audio bytes. When a public Cloud audio file matches a track by catalog source ID or normalized title and version, playback uses the Cloud copy in place of that track’s drive copy. The local file is left untouched and is used if no Cloud match is available. Per-song audio, cover overrides, and lyric attachments are stored in IndexedDB. These personal files and lyrics are not uploaded to GitHub or shared with other devices or visitors.
 - To link a mounted external drive, use **Link audio & covers from drive** over HTTPS or localhost in a browser with folder access (such as Chrome or Edge), then select the folder. The app scans subfolders, matches known filenames to catalog entries, and adds non-matching audio as local Drive file entries so those files remain visible and playable. Embedded cover art is extracted automatically. Each device and visitor must select their own folder.
 - The sidebar’s **Drive songs** view filters the catalog to entries linked from that browser’s selected drive.

@@ -3,7 +3,8 @@
   "private": true,
   "type": "module",
   "scripts": {
-    "discord": "node --env-file=.env discord-bot.mjs"
+    "discord": "node --env-file=.env discord-bot.mjs",
+    "test": "node --test discord-presence.test.mjs"
   },
   "engines": {
     "node": ">=22"

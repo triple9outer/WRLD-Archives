@@ -34,6 +34,12 @@ To configure it in Cloudflare:
 
 Cloudflare documents R2 setup and current pricing at [R2 Get started](https://developers.cloudflare.com/r2/get-started/) and [R2 pricing](https://developers.cloudflare.com/r2/pricing/). The free tier and rates can change; check the dashboard before storing large libraries. The app limits each file to 95 MB, uploads up to three selected files concurrently, and supports HTTP range requests for streaming. Upload time still depends on your connection and file sizes. The current Pages Function is `functions/api/cloud-audio.js`.
 
+## Public catalog API
+
+The Cloudflare Pages endpoint `https://wrld-archives.pages.dev/api/catalog` returns the complete song metadata catalog, including versions and released, unreleased, and unsurfaced categories. Use `?category=released`, `?category=unreleased`, or `?category=unsurfaced` to filter; `q`, `limit`, and `offset` support search and pagination. This endpoint contains metadata only and omits audio-file paths. The app uses this endpoint on Cloudflare Pages and falls back to the source catalog API on static hosts.
+
+Public audio is served by `GET /api/cloud-audio?list=1` and streamed by `GET /api/cloud-audio?id=<catalog-id>`; byte ranges are supported. `POST /api/cloud-audio` is an admin-only upload route. Only recordings you own or have explicit distribution rights for may be published. A recording being shared online does not mean it is cleared to redistribute. Supabase remains responsible for sign-in, favorites, and playlists; Cloudflare Pages and R2 run the public catalog and authorized-audio endpoints.
+
 ## Ambient music-video backgrounds
 
 Ambient desktop can look up an embeddable official music video for a currently playing released song, then uses the video as a muted visual background while the app's selected audio remains the player audio. The cover art remains the fallback. Automatic lookup requires Cloudflare Pages and a server-side YouTube Data API key: add an encrypted secret named `YOUTUBE_DATA_API_KEY` to the Pages project, then redeploy. The browser never receives the key. The function requests embeddable video search results and only accepts matching results from its configured official-channel allowlist. See Google's [YouTube Data API search.list reference](https://developers.google.com/youtube/v3/docs/search/list). GitHub Pages continues to show the cover background.
@@ -110,7 +116,7 @@ Requires Node.js 20 or newer. Run the same checks used by GitHub Actions:
 
 ```sh
 node scripts/validate.mjs
-node --test catalog.test.mjs lyrics-api.test.mjs library-tools.test.mjs cloud-audio.test.mjs music-video-api.test.mjs
+node --test catalog.test.mjs catalog-api.test.mjs lyrics-api.test.mjs library-tools.test.mjs cloud-audio.test.mjs music-video-api.test.mjs
 ```
 
 ## Local desktop assistant

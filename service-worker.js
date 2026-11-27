@@ -1,4 +1,4 @@
-const CACHE = 'wrld-archives-shell-v47';
+const CACHE = 'wrld-archives-shell-v48';
 const SHELL = ['./', './index.html', './catalog.mjs', './library-tools.mjs', './cover-index.mjs', './official-album-covers.mjs', './auth-config.js', './account-auth.mjs', './cloud-library-sync.mjs', './manifest.webmanifest', './wrld-icon.svg'];
 self.addEventListener('install', event => {
   event.waitUntil(caches.open(CACHE).then(cache => cache.addAll(SHELL)));
@@ -11,7 +11,7 @@ self.addEventListener('activate', event => {
 self.addEventListener('fetch', event => {
   const request = event.request;
   const url = new URL(request.url);
-  if (request.method !== 'GET' || url.origin !== self.location.origin || /\/api\/(lyrics|cloud-audio|music-video)(?:\/|$)/.test(url.pathname)) return;
+  if (request.method !== 'GET' || url.origin !== self.location.origin || /\/api\/(lyrics|cloud-audio|music-video|catalog)(?:\/|$)/.test(url.pathname)) return;
   event.respondWith(fetch(request).then(response => {
     if (response.ok) {
       const copy = response.clone();

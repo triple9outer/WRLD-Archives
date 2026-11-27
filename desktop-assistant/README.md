@@ -37,6 +37,17 @@ The optional Discord bot adds `/wrld-search` and `/wrld-ai` for everyone in one 
 
 The bot must stay running for slash commands to respond. This source package does not contain your Discord credentials or automatically create the Discord application.
 
+## Discord listening status (Rich Presence)
+
+The music page can optionally show the current song on the listener's Discord profile. It is off by default and uses the local desktop companion plus the Discord desktop app; a Discord server bot cannot set a member's personal status. The companion only sends the track title, album, play/pause state, and playback position to Discord. It does not send audio or lyrics. Each listener controls whether unreleased titles are shown. A local refresh token is saved in `~/.wrld-archives/discord-auth.json` with owner-only file permissions; switch sharing off in the page to clear the displayed activity.
+
+1. In the Discord Developer Portal, create or choose an application. Set it up as a public OAuth client so the local PKCE flow can exchange and refresh tokens.
+2. Copy its Application ID to `WRLD_DISCORD_APPLICATION_ID` in `.env`. Do not paste a bot token here. The bot token is not used for this feature.
+3. If the music page is hosted on GitHub Pages or Cloudflare Pages, set `WRLD_ARCHIVES_ORIGIN` to that exact origin (for example, `https://username.github.io`), then restart the companion. Leave it blank when the page is served from the companion's own local address.
+4. Open Discord desktop and the music page on the same computer, then enable **Share my listening status**. Discord may show its authorization prompt.
+
+Discord currently restricts the `rpc` scope used for Rich Presence to approved applications. Discord can reject the connection until it grants RPC access; public availability may require approval. Discord's activity privacy settings also control who can see a profile status. The page's setup dialog explains these limits and the local companion steps.
+
 ## Local model
 
 The default model is `qwen3:1.7b`. Ollama lists this model at about 1.4 GB. The app sends chat only to the local Ollama endpoint. Do not enable a cloud model in Ollama if you want to keep inference local.

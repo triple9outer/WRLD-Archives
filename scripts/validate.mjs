@@ -59,6 +59,16 @@ assert.match(html, /staticCoverPathForTrack\(track\)\|\|staticCoverPathForAlbum/
 assert.equal(manifest.name, 'WRLD Archives');
 assert.equal(manifest.start_url, './');
 assert.ok(manifest.icons?.length, 'manifest must declare an icon');
+assert.match(html, /name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover"/, 'mobile safe areas must be enabled');
+assert.match(html, /rel="apple-touch-icon"[^>]*href="apple-touch-icon.png"/, 'iOS home-screen icon must be declared');
+assert.match(html, /playsinline webkit-playsinline/, 'audio playback must stay in the app viewport on mobile browsers');
+assert.match(html, /--wrld-side-width:0px/, 'mobile player must not reserve a desktop sidebar gutter');
+assert.match(html, /position:fixed!important;left:calc\(8px \+ env\(safe-area-inset-left,0px\)\)!important/, 'mobile player must stay visible above the safe area');
+assert.match(html, /playerDockHeader\{grid-template-columns:minmax\(0,1fr\) auto auto auto\}/, 'all four player actions must fit on a single row');
+assert.ok(manifest.icons?.some(icon => icon.sizes === '192x192' && icon.type === 'image/png'), 'Android install icon must be 192 pixels');
+assert.ok(manifest.icons?.some(icon => icon.sizes === '512x512' && icon.type === 'image/png'), 'Android install icon must be 512 pixels');
+assert.match(worker, /'\.\/apple-touch-icon\.png'/, 'service worker must include the Apple home-screen icon');
+
 assert.ok(catalog.includes('export function mergeApiCatalog'));
 assert.match(catalogApi, /songs\/?\?all=true&versions=true/);
 assert.match(catalogApi, /function metadataOnly\(/, 'the public catalog API must return metadata only');

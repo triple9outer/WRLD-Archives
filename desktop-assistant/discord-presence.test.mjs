@@ -26,6 +26,24 @@ test('Rich Presence includes the track title when sharing unreleased titles is e
   assert.equal('timestamps' in activity, false);
 });
 
+test('Rich Presence includes a public HTTPS song cover', () => {
+  const activity = sanitizePresenceTrack({
+    title: 'Released Track',
+    coverUrl: 'https://triple9outer.github.io/WRLD-Archives/assets/covers/example.jpg',
+  });
+  assert.equal(activity.assets.large_image, 'https://triple9outer.github.io/WRLD-Archives/assets/covers/example.jpg');
+  assert.equal(activity.assets.large_text, 'WRLD Archives');
+});
+
+test('Rich Presence rejects non-public or malformed song cover URLs', () => {
+  for (const coverUrl of ['http://example.com/cover.jpg', 'blob:https://example.com/cover', 'data:image/png;base64,abc', 'https://user:pass@example.com/cover.jpg']) {
+    const activity = sanitizePresenceTrack({ title: 'Track', coverUrl });
+    assert.equal('assets' in activity, false, coverUrl);
+  }
+  const activity = sanitizePresenceTrack({ title: 'Track', coverUrl: 'https://example.com/' + 'a'.repeat(301) });
+  assert.equal('assets' in activity, false);
+});
+
 test('RPC frames use Discord little-endian headers and UTF-8 JSON payloads', () => {
   const frame = encodeRpcFrame(1, { cmd: 'SET_ACTIVITY', args: { activity: null }, nonce: 'test' });
   assert.equal(frame.readUInt32LE(0), 1);

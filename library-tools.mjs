@@ -54,6 +54,25 @@ export function analyzeLibraryCheckup(tracks, fileChecks = {}) {
   return report;
 }
 
+
+export async function fingerprintAudioBlob(blob, { subtle = globalThis.crypto?.subtle, chunkSize = 4 * 1024 * 1024 } = {}) {
+  if (!blob || typeof blob.slice !== 'function' || !Number.isFinite(Number(blob.size))) {
+    throw new TypeError('A readable Blob or File is required.');
+  }
+  if (!subtle?.digest) throw new Error('Secure SHA-256 hashing is unavailable in this browser.');
+  const size = Number(blob.size);
+  const digests = [];
+  for (let offset = 0; offset < size; offset += chunkSize) {
+    const bytes = await blob.slice(offset, Math.min(size, offset + chunkSize)).arrayBuffer();
+    digests.push(new Uint8Array(await subtle.digest('SHA-256', bytes)));
+  }
+  const manifest = new Uint8Array(8 + digests.length * 32);
+  new DataView(manifest.buffer).setBigUint64(0, BigInt(size));
+  digests.forEach((digest, index) => manifest.set(digest, 8 + index * 32));
+  const fingerprint = new Uint8Array(await subtle.digest('SHA-256', manifest));
+  return [...fingerprint].map(byte => byte.toString(16).padStart(2, '0')).join('');
+}
+
 export function summarizeListeningStats(tracks, stats = {}) {
   const rows = tracks.map(track => {
     const value = stats[track.id] || {};

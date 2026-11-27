@@ -22,6 +22,7 @@ export function sanitizePresenceTrack(track = {}, { showUnreleased = true, now =
   const unreleased = track.status === 'unreleased';
   const album = cleanText(track.album, 100);
   const version = cleanText(track.version, 60);
+  const coverUrl = cleanPublicHttpsUrl(track.coverUrl);
   const hiddenTitle = unreleased && !showUnreleased;
   const details = hiddenTitle ? 'Unreleased song' : [title, version].filter(Boolean).join(' · ');
   const activity = {
@@ -29,6 +30,7 @@ export function sanitizePresenceTrack(track = {}, { showUnreleased = true, now =
     details: cleanText(details, 128),
     state: ['Juice WRLD', album].filter(Boolean).join(' · '),
   };
+  if (coverUrl) activity.assets = { large_image: coverUrl, large_text: 'WRLD Archives' };
   if (track.playing === true) {
     const position = Math.max(0, finite(track.position));
     const duration = Math.max(0, finite(track.duration));
@@ -48,6 +50,18 @@ function finite(value) {
 
 function cleanText(value, maxLength) {
   return String(value || '').replace(/[\u0000-\u001f\u007f]/g, ' ').replace(/\s+/g, ' ').trim().slice(0, maxLength);
+}
+
+function cleanPublicHttpsUrl(value) {
+  const text = String(value || '').trim();
+  if (!text || text.length > 300) return '';
+  try {
+    const url = new URL(text);
+    if (url.protocol !== 'https:' || url.username || url.password) return '';
+    return url.href;
+  } catch {
+    return '';
+  }
 }
 
 function discordSocketPaths() {

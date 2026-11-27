@@ -1,6 +1,6 @@
 import assert from 'node:assert/strict';
 import test from 'node:test';
-import { analyzeLibraryCheckup, summarizeListeningStats } from './library-tools.mjs';
+import { analyzeLibraryCheckup, fingerprintAudioBlob, summarizeListeningStats } from './library-tools.mjs';
 
 test('checkup reports missing links, local extras, cover and lyric gaps, and format warnings', () => {
   const tracks = [
@@ -57,4 +57,16 @@ test('replay summary aggregates local plays and listening time by song and album
   assert.equal(summary.uniqueAlbums, 2);
   assert.equal(summary.topTracks[0].track.id, 'a');
   assert.deepEqual(summary.topAlbums.map(album => [album.name, album.plays]), [['Project One', 6], ['Project Two', 1]]);
+});
+
+
+test('chunked audio fingerprints match identical bytes and distinguish changed content', async () => {
+  const first = new Blob(['same audio bytes']);
+  const second = new Blob(['same audio bytes']);
+  const changed = new Blob(['same audio byte!']);
+  const options = { chunkSize: 4 };
+
+  assert.equal(await fingerprintAudioBlob(first, options), await fingerprintAudioBlob(second, options));
+  assert.notEqual(await fingerprintAudioBlob(first, options), await fingerprintAudioBlob(changed, options));
+  assert.notEqual(await fingerprintAudioBlob(new Blob([]), options), await fingerprintAudioBlob(new Blob(['x']), options));
 });

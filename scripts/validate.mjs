@@ -26,9 +26,9 @@ assert.match(html, /id="accountGoogle"/, 'the account dialog must offer Google s
 assert.match(html, /id="accountEmail" type="email"/, 'the account dialog must accept email sign-in');
 assert.match(html, /id="accountPhone" type="tel"/, 'the account dialog must accept phone sign-in');
 assert.match(html, /id="accountPhoneVerify"/, 'the account dialog must verify SMS codes');
-assert.match(html, /Your favorites, playlists, and audio remain in this browser/, 'auth must not imply that local library data is synced');
-assert.match(authConfig, /supabaseUrl: ''/);
-assert.match(authConfig, /publishableKey: ''/);
+assert.match(html, /id="cloudSyncStatus"/, 'the account panel must report favorites and playlist sync status');
+assert.match(authConfig, /supabaseUrl: 'https:\/\/[a-z0-9-]+\.supabase\.co'/i);
+assert.match(authConfig, /publishableKey: 'sb_publishable_/);
 assert.doesNotMatch(authConfig, /service_role|sb_secret_/i, 'only public auth config may be placed in the browser file');
 assert.match(discordWorkflow, /DISCORD_WEBHOOK_URL: \$\{\{ secrets\.DISCORD_WEBHOOK_URL \}\}/, 'Discord notifications must read the webhook from a GitHub Actions secret');
 assert.match(discordWorkflow, /branches:\s*\n\s*- main/, 'Discord notices must run after updates to the main branch');
@@ -37,7 +37,7 @@ assert.doesNotMatch(discordWorkflow, /https:\/\/discord\.com\/api\/webhooks\/\d+
 assert.match(worker, /'\.\/catalog\.mjs'/, 'service worker must cache the catalog module');
 assert.match(worker, /'\.\/cover-index\.mjs'/, 'service worker must cache the bundled cover map');
 assert.match(worker, /'\.\/library-tools\.mjs'/, 'service worker must cache the local library tools module');
-assert.match(worker, /wrld-archives-shell-v45/, 'service worker cache must refresh for account and responsive Ambient updates');
+assert.match(worker, /wrld-archives-shell-v47/, 'service worker cache must refresh for account and responsive Ambient updates');
 assert.match(worker, /'\.\/auth-config\.js'/, 'service worker must cache the public auth configuration file');
 assert.match(worker, /'\.\/account-auth\.mjs'/, 'service worker must cache the account sign-in module');
 assert.match(html, /id="deviceFilesPicker"[^>]*multiple hidden/, 'iOS must have a multi-file device picker');

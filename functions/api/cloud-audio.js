@@ -1,11 +1,19 @@
 const MAX_UPLOAD_BYTES = 95 * 1024 * 1024;
+const MAX_COVER_BYTES = 8 * 1024 * 1024;
 const AUDIO_KEY_PREFIX = 'audio/';
+const COVER_KEY_PREFIX = 'covers/';
 const AUDIO_EXTENSIONS = /\.(mp3|m4a|mp4|flac|wav|aac|ogg|opus|aiff?|alac)$/i;
+const COVER_EXTENSIONS = /\.(jpg|jpeg|png|webp|gif|avif)$/i;
 const MIME_BY_EXTENSION = {
   mp3: 'audio/mpeg', m4a: 'audio/mp4', mp4: 'audio/mp4', flac: 'audio/flac',
   wav: 'audio/wav', aac: 'audio/aac', ogg: 'audio/ogg', opus: 'audio/ogg',
   aif: 'audio/aiff', aiff: 'audio/aiff', alac: 'audio/mp4'
 };
+const IMAGE_MIME_BY_EXTENSION = {
+  jpg: 'image/jpeg', jpeg: 'image/jpeg', png: 'image/png', webp: 'image/webp',
+  gif: 'image/gif', avif: 'image/avif'
+};
+const IMAGE_MIME_TYPES = new Set(Object.values(IMAGE_MIME_BY_EXTENSION));
 
 function json(body, status = 200, extraHeaders = {}) {
   return new Response(JSON.stringify(body), {
@@ -103,6 +111,11 @@ async function listPublicAudio(bucket) {
 
 async function handleGet(request, env, url, headOnly = false) {
   if (!env?.AUDIO_BUCKET) return json({ error: 'R2 storage is not connected to this Cloudflare Pages project yet.' }, 503);
+  if (url.searchParams.has('cover')) {
+    const coverId = safeId(url.searchParams.get('cover'));
+    if (!coverId) return json({ error: 'A cover id is required.' }, 400);
+    return handleGetCover(env, coverId, headOnly);
+  }
   const catalogId = safeId(url.searchParams.get('id'));
   if (url.searchParams.get('list') === '1') {
     const items = await listPublicAudio(env.AUDIO_BUCKET);
@@ -135,6 +148,26 @@ async function handleGet(request, env, url, headOnly = false) {
   return new Response(headOnly ? null : object.body, { status: range ? 206 : 200, headers });
 }
 
+async function handleGetCover(env, coverId, headOnly = false) {
+  const key = `${COVER_KEY_PREFIX}${coverId}`;
+  const head = await env.AUDIO_BUCKET.head(key);
+  if (!head || head.customMetadata?.visibility !== 'public' || head.customMetadata?.coverRightsConfirmed !== 'true') {
+    return json({ error: 'This cover is not publicly available.' }, 404);
+  }
+  const object = headOnly ? null : await env.AUDIO_BUCKET.get(key);
+  if (!headOnly && !object) return json({ error: 'This cover is not publicly available.' }, 404);
+  const headers = new Headers();
+  if (object) object.writeHttpMetadata(headers);
+  const contentType = object?.httpMetadata?.contentType || head.httpMetadata?.contentType || 'application/octet-stream';
+  if (!IMAGE_MIME_TYPES.has(contentType)) return json({ error: 'This cover has an unsupported image type.' }, 415);
+  headers.set('content-type', contentType);
+  headers.set('content-length', String(head.size));
+  headers.set('cache-control', 'public, max-age=86400, immutable');
+  headers.set('x-content-type-options', 'nosniff');
+  if (object?.httpEtag || head.httpEtag) headers.set('etag', object?.httpEtag || head.httpEtag);
+  return new Response(headOnly ? null : object.body, { status: 200, headers });
+}
+
 async function handleUpload(request, env, url) {
   if (!sameOrigin(request, url)) return json({ error: 'Cross-origin uploads are not allowed.' }, 403);
   if (request.headers.get('X-WRLD-Archives') !== '1') return json({ error: 'Use WRLD Archives to upload audio.' }, 403);
@@ -147,6 +180,7 @@ async function handleUpload(request, env, url) {
   }
   let form;
   try { form = await request.formData(); } catch { return json({ error: 'The upload form could not be read.' }, 400); }
+  if (form.get('kind') === 'cover') return handleCoverUpload(form, env);
   const file = form.get('file');
   const fileName = clean(file?.name, 240);
   if (!(file instanceof File) || !file.size || !AUDIO_EXTENSIONS.test(fileName)) {
@@ -182,9 +216,40 @@ async function handleUpload(request, env, url) {
   return json({ ok: true, catalogId, title, size: file.size });
 }
 
+async function handleCoverUpload(form, env) {
+  const file = form.get('file');
+  const fileName = clean(file?.name, 240);
+  if (!(file instanceof File) || !file.size || file.size > MAX_COVER_BYTES || !COVER_EXTENSIONS.test(fileName)) {
+    return json({ error: 'Choose a supported cover image smaller than 8 MB.' }, file?.size > MAX_COVER_BYTES ? 413 : 400);
+  }
+  if (form.get('coverRightsConfirmed') !== 'yes') {
+    return json({ error: 'Confirm that you have permission to make this cover image publicly available.' }, 400);
+  }
+  const catalogId = safeId(form.get('catalogId'));
+  if (!catalogId) return json({ error: 'A stable cover id is required.' }, 400);
+  const extension = fileName.split('.').pop().toLowerCase();
+  const contentType = IMAGE_MIME_TYPES.has(file.type?.toLowerCase())
+    ? file.type.toLowerCase()
+    : IMAGE_MIME_BY_EXTENSION[extension];
+  if (!contentType) return json({ error: 'Choose a JPEG, PNG, WebP, GIF, or AVIF cover.' }, 400);
+  const key = `${COVER_KEY_PREFIX}${catalogId}`;
+  await env.AUDIO_BUCKET.put(key, file.stream(), {
+    httpMetadata: { contentType, contentDisposition: 'inline', cacheControl: 'public, max-age=86400, immutable' },
+    customMetadata: {
+      catalogId,
+      title: clean(form.get('title'), 180),
+      album: clean(form.get('album'), 180),
+      visibility: 'public',
+      coverRightsConfirmed: 'true'
+    }
+  });
+  return json({ ok: true, catalogId, size: file.size });
+}
+
 export async function onRequest({ request, env }) {
   const url = new URL(request.url);
-  if (!sameOrigin(request, url)) return json({ error: 'Cross-origin requests are not allowed.' }, 403);
+  const publicCoverRead = ['GET', 'HEAD'].includes(request.method) && url.searchParams.has('cover');
+  if (!sameOrigin(request, url) && !publicCoverRead) return json({ error: 'Cross-origin requests are not allowed.' }, 403);
   try {
     if (request.method === 'GET') return await handleGet(request, env, url);
     if (request.method === 'HEAD') return await handleGet(request, env, url, true);

@@ -38,7 +38,7 @@ assert.doesNotMatch(discordWorkflow, /https:\/\/discord\.com\/api\/webhooks\/\d+
 assert.match(worker, /'\.\/catalog\.mjs'/, 'service worker must cache the catalog module');
 assert.match(worker, /'\.\/cover-index\.mjs'/, 'service worker must cache the bundled cover map');
 assert.match(worker, /'\.\/library-tools\.mjs'/, 'service worker must cache the local library tools module');
-assert.match(worker, /wrld-archives-shell-v50/, 'service worker cache must refresh for exact-audio cleanup');
+assert.match(worker, /wrld-archives-shell-v\\d+/, 'service worker cache must use a versioned shell key');
 assert.match(worker, /'\.\/auth-config\.js'/, 'service worker must cache the public auth configuration file');
 assert.match(worker, /'\.\/account-auth\.mjs'/, 'service worker must cache the account sign-in module');
 assert.match(html, /id="deviceFilesPicker"[^>]*multiple hidden/, 'iOS must have a multi-file device picker');

@@ -14,7 +14,7 @@ function validProjectUrl(value) {
 const configured = validProjectUrl(supabaseUrl) && publishableKey.length >= 20;
 let clientPromise;
 
-async function getClient() {
+export async function getSupabaseClient() {
   if (!configured) throw new Error('Sign-in has not been configured for this app yet.');
   if (!clientPromise) {
     clientPromise = import('https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.119.2/+esm').then(({ createClient }) => {
@@ -65,6 +65,7 @@ export function initAccountAuth() {
     } else if (badge) {
       badge.textContent = configured ? 'Sign in' : 'Set up';
     }
+    window.dispatchEvent(new CustomEvent('wrld-auth-state', { detail: { user, session, client } }));
   }
 
   async function ensureClient() {
@@ -74,7 +75,7 @@ export function initAccountAuth() {
       setStatus('Sign-in is not configured yet. Add the public Supabase project URL and publishable key to auth-config.js.', 'error');
       throw new Error('Sign-in setup is required before accounts can be used.');
     }
-    client ||= await getClient();
+    client ||= await getSupabaseClient();
     if (!client.authListenerAttached) {
       client.auth.onAuthStateChange((_event, session) => renderSession(session));
       client.authListenerAttached = true;
@@ -200,4 +201,10 @@ export function initAccountAuth() {
   });
 
   renderSession(null);
+  if (configured) {
+    ensureClient().then(async auth => {
+      const { data, error } = await auth.auth.getSession();
+      if (!error) renderSession(data.session);
+    }).catch(() => {});
+  }
 }

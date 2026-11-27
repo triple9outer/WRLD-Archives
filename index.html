@@ -212,7 +212,7 @@
     .nowPlayingDialog{width:min(1240px,calc(100vw - 28px));height:min(90dvh,920px);max-height:90dvh;border:1px solid rgba(226,205,242,.32);border-radius:28px;background:radial-gradient(ellipse at 7% 4%,rgba(137,86,166,.23),transparent 42%),radial-gradient(ellipse at 100% 100%,rgba(124,81,109,.16),transparent 42%),linear-gradient(145deg,rgba(28,21,36,.98),rgba(10,9,15,.98) 72%);box-shadow:0 30px 100px rgba(0,0,0,.72);overflow:hidden}
     .nowPlayingShell{height:100%;min-height:0;display:flex;flex-direction:column;padding:clamp(13px,2vw,22px)}
     .nowPlayingMain{display:grid;grid-template-columns:minmax(280px,.82fr) minmax(0,1.18fr);align-items:stretch;gap:clamp(18px,3vw,38px);flex:1;min-height:0;padding:clamp(12px,2vw,22px) 4px 4px}
-    .nowPlayingArtworkDeck{display:grid;grid-template-rows:minmax(0,1fr) auto;align-content:start;gap:15px;min-width:0;min-height:0}
+    .nowPlayingArtworkDeck{display:grid;grid-template-rows:auto auto;align-content:start;align-self:stretch;gap:15px;min-width:0;min-height:0;max-height:calc(92dvh - 112px);overflow-x:hidden;overflow-y:auto;overscroll-behavior:contain;-webkit-overflow-scrolling:touch;scrollbar-gutter:stable}
     .nowPlayingCover{width:min(100%,440px);min-height:0;align-self:center;justify-self:center;border-radius:24px;box-shadow:0 22px 62px rgba(0,0,0,.5),0 0 42px rgba(188,147,223,.14)}
     .nowPlayingInfo{display:grid;grid-template-columns:minmax(0,1fr);align-content:start;gap:8px;min-width:0;padding:0 2px}
     .nowPlayingInfo h2{font:700 clamp(24px,2.7vw,38px)/1.08 'DM Sans',system-ui,sans-serif;letter-spacing:normal;word-spacing:normal;overflow-wrap:anywhere}

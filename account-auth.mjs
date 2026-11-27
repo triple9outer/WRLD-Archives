@@ -77,7 +77,7 @@ export function initAccountAuth() {
     }
     client ||= await getSupabaseClient();
     if (!client.authListenerAttached) {
-      client.auth.onAuthStateChange((_event, session) => renderSession(session));
+      client.auth.onAuthStateChange((event, session) => { renderSession(session); if (event === 'SIGNED_IN' && dialog.open) dialog.close(); });
       client.authListenerAttached = true;
     }
     return client;

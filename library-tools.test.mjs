@@ -1,6 +1,6 @@
 import assert from 'node:assert/strict';
 import test from 'node:test';
-import { analyzeLibraryCheckup, fingerprintAudioBlob, summarizeListeningStats } from './library-tools.mjs';
+import { analyzeLibraryCheckup, fingerprintAudioBlob, nextLibraryTrack, summarizeListeningStats } from './library-tools.mjs';
 
 test('checkup reports missing links, local extras, cover and lyric gaps, and format warnings', () => {
   const tracks = [
@@ -69,4 +69,15 @@ test('chunked audio fingerprints match identical bytes and distinguish changed c
   assert.equal(await fingerprintAudioBlob(first, options), await fingerprintAudioBlob(second, options));
   assert.notEqual(await fingerprintAudioBlob(first, options), await fingerprintAudioBlob(changed, options));
   assert.notEqual(await fingerprintAudioBlob(new Blob([]), options), await fingerprintAudioBlob(new Blob(['x']), options));
+});
+
+
+test('automatic next track advances and stops instead of replaying the last song', () => {
+  const tracks = [{ id: 'a' }, { id: 'b' }];
+  assert.equal(nextLibraryTrack(tracks, ''), tracks[0]);
+  assert.equal(nextLibraryTrack(tracks, 'a'), tracks[1]);
+  assert.equal(nextLibraryTrack(tracks, 'b'), null);
+  assert.equal(nextLibraryTrack([tracks[0]], 'a'), null);
+  assert.equal(nextLibraryTrack(tracks, 'a', true, () => 0), tracks[1]);
+  assert.equal(nextLibraryTrack([tracks[0]], 'a', true), null);
 });

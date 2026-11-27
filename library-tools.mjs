@@ -73,6 +73,21 @@ export async function fingerprintAudioBlob(blob, { subtle = globalThis.crypto?.s
   return [...fingerprint].map(byte => byte.toString(16).padStart(2, '0')).join('');
 }
 
+
+export function nextLibraryTrack(availableTracks, currentTrackId, shuffleEnabled = false, random = Math.random) {
+  const available = Array.isArray(availableTracks) ? availableTracks.filter(track => track && track.id) : [];
+  if (!available.length) return null;
+  const choices = available.filter(track => track.id !== currentTrackId);
+  if (shuffleEnabled) {
+    if (!choices.length) return null;
+    const position = Math.max(0, Math.min(choices.length - 1, Math.floor(Number(random()) * choices.length)));
+    return choices[position] || null;
+  }
+  const index = available.findIndex(track => track.id === currentTrackId);
+  if (index < 0) return available[0];
+  return available[index + 1] || null;
+}
+
 export function summarizeListeningStats(tracks, stats = {}) {
   const rows = tracks.map(track => {
     const value = stats[track.id] || {};

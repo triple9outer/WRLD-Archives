@@ -41,7 +41,7 @@ assert.doesNotMatch(discordWorkflow, /https:\/\/discord\.com\/api\/webhooks\/\d+
 assert.match(worker, /'\.\/catalog\.mjs'/, 'service worker must cache the catalog module');
 assert.match(worker, /'\.\/cover-index\.mjs'/, 'service worker must cache the bundled cover map');
 assert.match(worker, /'\.\/library-tools\.mjs'/, 'service worker must cache the local library tools module');
-assert.match(worker, /wrld-archives-shell-v49/, 'service worker cache must refresh for the public catalog API');
+assert.match(worker, /wrld-archives-shell-v50/, 'service worker cache must refresh for the public catalog API');
 assert.match(worker, /'\.\/auth-config\.js'/, 'service worker must cache the public auth configuration file');
 assert.match(worker, /'\.\/account-auth\.mjs'/, 'service worker must cache the account sign-in module');
 assert.match(html, /id="deviceFilesPicker"[^>]*multiple hidden/, 'iOS must have a multi-file device picker');
@@ -80,6 +80,7 @@ assert.match(accountAuth, /auth\.signInWithOtp\(\{\s*email,/, 'email sign-in mus
 assert.match(accountAuth, /auth\.signInWithOtp\(\{ phone \}/, 'phone sign-in must request an SMS code');
 assert.match(accountAuth, /auth\.verifyOtp\(\{ phone: pendingPhone, token, type: 'sms' \}\)/, 'SMS sign-in must verify the one-time code');
 assert.match(accountAuth, /auth\.onAuthStateChange/, 'account UI must update when the auth session changes');
+assert.match(accountAuth, /event === 'SIGNED_IN' && dialog.open\) dialog.close\(\)/, 'successful sign-in must close the account modal so mobile controls remain usable');
 assert.match(accountAuth, /auth\.signOut\(\)/, 'account UI must support sign-out');
 assert.match(moduleScript, /async function attachDeviceFiles\(files,onProgress=/, 'mobile file selection must store and match selected audio and artwork');
 assert.match(moduleScript, /jw-tier-ratings-v1/, 'tier assignments must persist on this device');
